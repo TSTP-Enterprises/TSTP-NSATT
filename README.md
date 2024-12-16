@@ -1,4 +1,4 @@
-# NSATT - Network Security and Administration Toolkit
+# NSATT - Network, Security, Administration, and Testing Tool
 
 NSATT is a comprehensive and powerful network security and administration toolkit specifically designed for Raspberry Pi. This innovative toolkit integrates essential networking tools and system utilities into a single, intuitive graphical interface. With features that encompass WiFi management, network scanning, service monitoring, and security testing capabilities, NSATT is the ultimate solution for both novice and experienced users looking to enhance their network security and administration tasks.
 
