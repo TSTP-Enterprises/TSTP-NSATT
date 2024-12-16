@@ -1,0 +1,7 @@
+# Supported funding model platforms
+
+github: [TSTP-Enterprises] # Up to 4 GitHub Sponsors-enabled usernames, e.g., [user1, user2]
+patreon: thesolutionstoproblems # A single Patreon username
+ko_fi: thesolutionstoproblems # A single Ko-fi username
+buy_me_a_coffee: thesolutionstoproblems # A single Buy Me a Coffee username
+custom: ['https://www.paypal.com/donate/?hosted_button_id=RAAYNUTMHPQQN', 'https://buymeacoffee.com/thesolutionstoproblems', 'https://ko-fi.com/thesolutionstoproblems'] # Up to 4 custom sponsorship URLs, e.g., ['link1', 'link2']
