@@ -1,0 +1,183 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+nav ul li a {
+    color: #00aaff;
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 2em;
+    color: #00aaff;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.info-container, .form-container {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-container {
+    text-align: left;
+}
+
+pre {
+    background: #2e2e2e;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    text-align: left;
+}
+
+.button-group {
+    margin-top: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 15px;
+    width: 150px;  /* Standard button width */
+    color: #fff;
+    background-color: #00aaff;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    border: none;
+}
+
+.button.warning {
+    background-color: #ffc107;
+}
+
+.button.info {
+    background-color: #17a2b8;
+}
+
+.button.green {
+    background-color: #28a745;
+}
+
+.button.blue {
+    background-color: #007bff;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #999;
+}
+
+.section-title {
+    color: #00aaff;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center; /* Centered titles */
+}
+
+.section-container {
+    background: #282828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: left; /* Align text and elements within the container to the left */
+}
+
+.section-container label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.section-container input[type="radio"],
+.section-container input[type="checkbox"] {
+    margin-right: 10px;
+    vertical-align: middle; /* Align the radio button to the middle of the label text */
+}
+
+.section-container input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #333;
+    color: #e0e0e0;
+}
+
+#custom-command {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #333;
+    color: #e0e0e0;
+}
+
+.error {
+    color: #ff4444;
+    font-size: 0.9em;
+    margin-top: -10px;
+}
+
+.table-container {
+    width: 100%;
+}
+
+.table-container td {
+    padding: 8px 15px;
+    vertical-align: middle; /* Align the text vertically in the middle */
+}
+
+.hidden {
+    display: none; /* Hidden by default */
+}
+
+.visible {
+    display: block; /* Display when toggled */
+}
+
+.show-more-container {
+    text-align: center; /* Center the Show More button */
+    margin-top: 10px;
+}

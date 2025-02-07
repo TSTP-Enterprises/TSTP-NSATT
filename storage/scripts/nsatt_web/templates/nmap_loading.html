@@ -1,0 +1,43 @@
+{% extends "iframe_template.html" %}
+{% block title %}Running Nmap Scan - TSTP N2A+{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Running Nmap Scan...</h2>
+    <div id="loading">
+        <p>Your scan is in progress. Results will be displayed here as they are received.</p>
+        <div class="spinner"></div>
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+    </div>
+    <pre id="scan_result" class="code-block" style="max-height: 400px; overflow-y: auto;"></pre>
+</div>
+<script>
+    // JavaScript for dynamically updating the scan results
+    const eventSource = new EventSource("{{ url_for('nmap_stream', target=target, scan_type=scan_type, options=options, custom_command=custom_command) }}");
+    const progress = document.querySelector('.progress');
+    const spinner = document.querySelector('.spinner');
+    let progressWidth = 0;
+
+    // Show spinner when scan starts
+    spinner.style.display = 'block';
+
+    eventSource.onmessage = function(event) {
+        // Append the new scan result to the pre block
+        document.getElementById("scan_result").innerHTML += event.data + "\n";
+
+        // Update progress bar
+        progressWidth += 10; // Simulating progress (adjust this as needed)
+        if (progressWidth <= 100) {
+            progress.style.width = progressWidth + '%';
+        }
+    };
+
+    eventSource.onerror = function() {
+        eventSource.close();
+        document.getElementById("scan_result").innerHTML += "<br>Connection closed.";
+        // Hide spinner when scan ends
+        spinner.style.display = 'none';
+    };
+</script>
+{% endblock %}

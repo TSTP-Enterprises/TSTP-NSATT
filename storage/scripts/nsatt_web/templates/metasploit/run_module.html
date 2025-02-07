@@ -1,0 +1,16 @@
+{% extends "iframe_template.html" %}
+{% block title %}Run Module{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Run Module: {{ module_name }}</h2>
+    <form method="post" action="{{ url_for('metasploit.run_module', module_name=module_name) }}">
+        {% for option in options %}
+        <label for="{{ option.name }}">{{ option.name }} ({{ 'Required' if option.required else 'Optional' }})</label>
+        <input type="text" name="{{ option.name }}" id="{{ option.name }}" placeholder="{{ option.description }}" {{ 'required' if option.required else '' }}>
+        {% endfor %}
+        <div class="button-group">
+            <button type="submit" class="button green">Run Module</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

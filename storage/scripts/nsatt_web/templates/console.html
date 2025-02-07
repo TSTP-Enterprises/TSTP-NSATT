@@ -1,0 +1,91 @@
+{% extends "iframe_template.html" %}
+{% block title %}Console{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Console</h2>
+
+    <div class="section-container">
+        <h3 class="section-title">Output</h3>
+        <pre id="console-output" class="console-output"></pre>
+    </div>
+
+    <div class="section-container" style="display: flex; align-items: center; margin-top: 10px;">
+        <input type="text" id="command" name="command" placeholder="Enter Command" required style="flex-grow: 1;">
+        <button id="run-command" class="button green" style="margin-left: 10px; width: 100px;" onclick="sendCommand()">Send</button>
+        <button id="cancel-command" class="button red" style="margin-left: 10px; width: 100px;" onclick="cancelCommand()">Cancel</button>
+    </div>
+
+    <div class="button-group" style="margin-top: 10px;">
+        <button id="clear-console" class="button" style="width: 100px;" onclick="clearConsole()">Clear</button>
+        <button id="save-console" class="button" style="width: 100px;" onclick="saveConsole()">Save</button>
+    </div>
+</div>
+
+<script>
+let currentProcess = null;
+
+function sendCommand() {
+    const command = document.getElementById('command').value;
+    if (command.trim() === '') return;
+
+    document.getElementById('command').value = ''; // Clear the command textbox
+
+    const outputElement = document.getElementById('console-output');
+    const eventSource = new EventSource(`/console/stream?command=${encodeURIComponent(command)}`, { withCredentials: true });
+
+    eventSource.onmessage = function(event) {
+        outputElement.textContent += event.data + '\n';
+        outputElement.scrollTop = outputElement.scrollHeight; // Scroll to the bottom
+    };
+
+    eventSource.onerror = function() {
+        eventSource.close();
+    };
+
+    // Store the EventSource for cancellation
+    currentProcess = eventSource;
+}
+
+function cancelCommand() {
+    if (currentProcess) {
+        currentProcess.close(); // Stop the current command
+        currentProcess = null;
+    }
+}
+
+function clearConsole() {
+    document.getElementById('console-output').textContent = '';
+}
+
+function saveConsole() {
+    const output = document.getElementById('console-output').textContent;
+    const blob = new Blob([output], { type: 'text/plain' });
+    const url = window.parent.URL.createObjectURL(blob);
+    const a = window.parent.document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'console_output.txt';
+    window.parent.document.body.appendChild(a);
+    a.click();
+    window.parent.URL.revokeObjectURL(url);
+}
+
+document.getElementById('command').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendCommand();
+    }
+});
+</script>
+
+<style>
+.console-output {
+    background-color: black;
+    color: green;
+    padding: 10px;
+    height: 400px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+}
+</style>
+{% endblock %}

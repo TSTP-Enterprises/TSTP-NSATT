@@ -1,0 +1,17 @@
+/* Blue Theme */
+
+QWidget {
+    background-color: #e0f7fa;
+    color: #006064;
+}
+
+QPushButton {
+    background-color: #0097a7;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+QPushButton:hover {
+    background-color: #00796b;
+}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="logs">
+    <h2>Network Logs</h2>
+    <form action="{{ url_for('delete_logs') }}" method="POST">
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Interface</th>
+                    <th>Event</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><input type="checkbox" name="log_ids" value="{{ log.id }}"></td>
+                    <td>{{ log.id }}</td>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.interface }}</td>
+                    <td>{{ log.event }}</td>
+                    <td>{{ log.details }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <input type="submit" value="Delete Selected Logs">
+    </form>
+    <div class="log-actions">
+        <a href="{{ url_for('download_logs') }}" class="button">Download Logs</a>
+        <form action="{{ url_for('merge_logs') }}" method="POST" style="display:inline;">
+            <input type="submit" value="Merge Logs" class="button">
+        </form>
+    </div>
+</section>
+{% endblock %}

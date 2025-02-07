@@ -1,0 +1,61 @@
+{% extends "iframe_template.html" %}
+{% block title %}Nmap Scan Results{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Nmap Scan Results</h2>
+
+    <form id="nmap-results-form" method="POST" action="{{ url_for('manage_nmap_results_route') }}">
+        <!-- Sorting Section -->
+        <div class="section-container">
+            <div class="section-title">Sort By</div>
+            <div class="button-group">
+                <a href="{{ url_for('manage_nmap_results_route', sort_by='scan_id') }}" class="button blue">Scan ID</a>
+                <a href="{{ url_for('manage_nmap_results_route', sort_by='date') }}" class="button blue">Date</a>
+                <a href="{{ url_for('manage_nmap_results_route', sort_by='scan_type') }}" class="button blue">Scan Type</a>
+                <a href="{{ url_for('manage_nmap_results_route', sort_by='target') }}" class="button blue">Target</a>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="section-container">
+            <div class="section-title">Results</div>
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Scan ID</th>
+                            <th>Date</th>
+                            <th>Scan Type</th>
+                            <th>Target</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_scans" value="{{ result[0] }}"></td>
+                            <td>{{ result[0] }}</td>
+                            <td>{{ result[1] }}</td>
+                            <td>{{ result[2] }}</td>
+                            <td>{{ result[3] }}</td>
+                            <td><a href="{{ url_for('nmap_result_detail', result_id=result[0]) }}" class="button blue">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="section-container">
+            <div class="section-title">Actions</div>
+            <div class="button-group">
+                <button type="submit" name="action" value="export" class="button green">Export Selected</button>
+                <button type="submit" name="action" value="delete_selected" class="button warning">Delete Selected</button>
+                <button type="submit" name="action" value="delete_all" class="button red">Delete All</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

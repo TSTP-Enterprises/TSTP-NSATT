@@ -1,0 +1,358 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    text-align: center;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+nav ul li a {
+    color: #00aaff;
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 2em;
+    color: #00aaff;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #00aaff;
+}
+
+.info-container, .form-container {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin: auto;
+    text-align: center;
+    max-width: 960px;
+    box-sizing: border-box;
+}
+
+.form-container {
+    text-align: left;
+}
+
+pre {
+    background: #2e2e2e;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    text-align: left;
+}
+
+.button-group {
+    margin-top: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 15px;
+    width: 150px;
+    color: #fff;
+    background-color: #00aaff;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #008fcc;
+}
+
+.button.warning {
+    background-color: #ffc107;
+}
+
+.button.info {
+    background-color: #17a2b8;
+}
+
+.button.green {
+    background-color: #28a745;
+}
+
+.button.blue {
+    background-color: #007bff;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #999;
+}
+
+.section-title {
+    color: #00aaff;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.section-container {
+    background: #282828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: left;
+    border: 1px solid #444;
+    max-width: 960px;
+    box-sizing: border-box;
+}
+
+.section-container label {
+    display: inline-block;
+    margin-bottom: 5px;
+    vertical-align: middle;
+}
+
+.section-container input[type="radio"],
+.section-container input[type="checkbox"] {
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.section-container input[type="text"],
+.section-container textarea,
+.section-container select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #333;
+    color: #e0e0e0;
+    box-sizing: border-box;
+}
+
+.advanced-options {
+    display: none;
+}
+
+.show-advanced-options {
+    display: block;
+}
+
+#custom-command {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #333;
+    color: #e0e0e0;
+    box-sizing: border-box;
+}
+
+.error {
+    color: #ff4444;
+    font-size: 0.9em;
+    margin-top: -10px;
+}
+
+.table-container {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    background-color: #1e1e1e;
+}
+
+.table-container th, .table-container td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border: 1px solid #444;
+}
+
+.table-container th {
+    background-color: #2a2a2a;
+    color: #00aaff;
+    font-weight: bold;
+    text-align: left;
+    border-bottom: 2px solid #00aaff;
+}
+
+.table-container td {
+    background-color: #333;
+    color: #e0e0e0;
+    text-align: left;
+}
+
+.label-cell {
+    width: 25%;
+    font-weight: bold;
+}
+
+.value-cell {
+    width: 75%;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.show-more-container {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    background-color: #333;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.progress {
+    width: 0%;
+    height: 10px;
+    background-color: #00aaff;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+}
+
+/* Spinner */
+.spinner {
+    margin: 20px auto;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #00aaff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hide spinner by default */
+.spinner {
+    display: none;
+}
+
+.code-block {
+    background: #2e2e2e;
+    color: #e0e0e0;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    text-align: left;
+    border: 1px solid #444;
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.results-table th, .results-table td {
+    border: 1px solid #444;
+    padding: 8px;
+    text-align: left;
+}
+
+.results-table th {
+    background-color: #333;
+    color: #00aaff;
+}
+
+.results-table td {
+    background-color: #222;
+    color: #e0e0e0;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #1a1a1a;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container, .info-container, .form-container, .section-container {
+        padding: 15px;
+    }
+
+    .button-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .table-container th, .table-container td {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+
+    .button {
+        padding: 8px 10px;
+    }
+
+    .section-title {
+        font-size: 1.1em;
+    }
+
+    .table-container th, .table-container td {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+}

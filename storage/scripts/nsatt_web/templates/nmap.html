@@ -1,0 +1,113 @@
+{% extends "iframe_template.html" %}
+{% block title %}Run Nmap Scan{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Run Nmap Scan</h2>
+
+    <!-- Form to Trigger Nmap Scan -->
+    <form method="post" action="{{ url_for('nmap_scan') }}">
+        <!-- Target Input Section -->
+        <div class="section-container">
+            <div class="section-title">Target Configuration</div>
+            <label for="target">Target (IP or range):</label>
+            <input type='text' id='target' name='target' required>
+        </div>
+
+        <!-- Scan Type Section -->
+        <div class="section-container">
+            <div class="section-title">Scan Types</div>
+            <table class="table-container">
+                <tr id="default-scans">
+                {% for key, value in scan_types.items() %}
+                    {% if loop.index <= 6 %}
+                    <td>
+                        <input type='radio' id='{{ key }}' name='scan_type' value='{{ key }}' required>
+                        <label for='{{ key }}'>{{ value }}</label>
+                    </td>
+                    {% endif %}
+                {% if loop.index % 2 == 0 and loop.index <= 6 %}
+                </tr><tr>
+                {% endif %}
+                {% endfor %}
+                </tr>
+            </table>
+            <div id="more-scans" class="hidden">
+                <table class="table-container">
+                    <tr>
+                    {% for key, value in scan_types.items() %}
+                        {% if loop.index > 6 %}
+                        <td>
+                            <input type='radio' id='{{ key }}' name='scan_type' value='{{ key }}' required>
+                            <label for='{{ key }}'>{{ value }}</label>
+                        </td>
+                        {% endif %}
+                    {% if loop.index % 2 == 0 and loop.index > 6 %}
+                    </tr><tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tr>
+                </table>
+            </div>
+            <div class="show-more-container">
+                <button class="button info" type="button" onclick="toggleVisibility('more-scans', this)">Show More</button>
+            </div>
+        </div>
+
+        <!-- Additional Options Section -->
+        <div class="section-container hidden" id="additional-options">
+            <div class="section-title">Additional Options</div>
+            <table class="table-container">
+                <tr>
+                {% for key, value in options.items() %}
+                    <td>
+                        <input type='checkbox' id='{{ key }}' name='options' value='{{ key }}'>
+                        <label for='{{ key }}'>{{ value }}</label>
+                    </td>
+                {% if loop.index % 2 == 0 %}
+                </tr><tr>
+                {% endif %}
+                {% endfor %}
+                </tr>
+            </table>
+        </div>
+
+        <!-- Custom Command Input Section -->
+        <div class="section-container hidden" id="custom-command-container">
+            <div class="section-title">Custom Command</div>
+            <label for="custom-command">Enter Custom Nmap Command:</label>
+            <input type="text" id="custom-command" name="custom_command" placeholder="e.g., nmap -A 192.168.0.1">
+            <span id="command-error" class="error"></span>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="button-group">
+            <button class="button green" type="submit">Run Scan</button>
+            <form action="/" method="get" style="display: inline;">
+                <button class="button blue" style="display: none;" type="submit">Go back</button>
+            </form>
+            <form action="/nmap/results" method="get" style="display: inline;">
+                <button class="button blue" type="submit">Previous Scans</button>
+            </form>
+            <button class="button warning" type="button" onclick="toggleSection('custom-command-container')">Custom</button>
+            <button class="button info" type="button" onclick="toggleSection('additional-options')">Additional</button>
+        </div>
+    </form>
+</div>
+<script>
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        section.classList.toggle('hidden');
+    }
+
+    function toggleVisibility(sectionId, btn) {
+        const section = document.getElementById(sectionId);
+        if (section.classList.contains('hidden')) {
+            section.classList.remove('hidden');
+            btn.innerText = 'Show Less';
+        } else {
+            section.classList.add('hidden');
+            btn.innerText = 'Show More';
+        }
+    }
+</script>
+{% endblock %}

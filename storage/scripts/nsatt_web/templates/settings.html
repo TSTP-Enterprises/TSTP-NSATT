@@ -1,0 +1,227 @@
+{% extends "iframe_template.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+
+
+<div class="form-container centered">
+    <h2>Settings</h2>
+    <form method='POST' action='/settings'>
+        <!-- Network Information Settings -->
+        <div class="section-container">
+            <h3 class="section-title">Network Information Settings</h3>
+            <table class="table-container">
+                <tr>
+                    <td>
+                        <input type="checkbox" id="show_lan_info" name="show_lan_info" {% if session.get('show_lan_info', True) %}checked{% endif %}>
+                        <label for="show_lan_info">Show LAN Information</label>
+                    </td>
+                    <td>
+                        <input type="checkbox" id="save_lan_info" name="save_lan_info" {% if session.get('save_lan_info', True) %}checked{% endif %}>
+                        <label for="save_lan_info">Save LAN Information</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" id="show_wan_info" name="show_wan_info" {% if session.get('show_wan_info', True) %}checked{% endif %}>
+                        <label for="show_wan_info">Show WAN Information</label>
+                    </td>
+                    <td>
+                        <input type="checkbox" id="save_wan_info" name="save_wan_info" {% if session.get('save_wan_info', True) %}checked{% endif %}>
+                        <label for="save_wan_info">Save WAN Information</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" id="show_request_info" name="show_request_info" {% if session.get('show_request_info', True) %}checked{% endif %}>
+                        <label for="show_request_info">Show Request Information</label>
+                    </td>
+                    <td>
+                        <input type="checkbox" id="save_request_info" name="save_request_info" {% if session.get('save_request_info', True) %}checked{% endif %}>
+                        <label for="save_request_info">Save Request Information</label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section-container centered message-container hidden" id="message-container">
+            <p id="message" class="message" style="font-weight: bold; text-align: center;"></p>
+        </div>
+        <script>
+            function showMessage(message) {
+                const messageContainer = document.getElementById('message-container');
+                const messageElement = document.getElementById('message');
+                if (messageElement && messageContainer) {
+                    messageElement.textContent = message;
+                    messageContainer.classList.remove('hidden');
+                    
+                    if (message.includes("successfully")) {
+                        messageContainer.style.backgroundColor = 'green';
+                    } else {
+                        messageContainer.style.backgroundColor = 'yellow';
+                    }
+
+                    setTimeout(() => {
+                        messageContainer.classList.add('hidden');
+                        messageContainer.style.backgroundColor = ''; // Reset background color
+                    }, 5000);
+                } else {
+                    console.error('Message container or element not found.');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const message = "{{ message }}";
+                if (message) {
+                    showMessage(message);
+                }
+            });
+        </script>
+
+        <!-- Service Control Settings -->
+        <div class="section-container hidden" id="service-control">
+            <h3 class="section-title">Service Control</h3>
+            <div class="button-group centered">
+                <button type="button" class="button info" data-service="apache2" onclick="toggleService('apache2')" style="height: 80px;">
+                    <div>HTTP</div>
+                    <div class="service-status"></div>
+                </button>
+                <button type="button" class="button info" data-service="ssh" onclick="toggleService('ssh')" style="height: 80px;">
+                    <div>SSH</div>
+                    <div class="service-status"></div>
+                </button>
+                <button type="button" class="button info" data-service="vsftpd" onclick="toggleService('vsftpd')" style="height: 80px;">
+                    <div>FTP</div>
+                    <div class="service-status"></div>
+                </button>
+                <button type="button" class="button info" data-service="lldpd" onclick="toggleService('lldpd')" style="height: 80px;">
+                    <div>LLDPD</div>
+                    <div class="service-status"></div>
+                </button>
+                <button type="button" class="button info" data-service="postgresql" onclick="toggleService('postgresql')" style="height: 80px;">
+                    <div>Postgresql</div>
+                    <div class="service-status"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Device Control Settings -->
+        <div class="section-container hidden" id="device-control">
+            <h3 class="section-title">Device Control</h3>
+            <div class="button-group centered">
+                <button type="button" class="button warning" onclick="restartScript()">Restart Script</button>
+                <button type="button" class="button red" onclick="stopScript()">Stop Script</button>
+                <button type="button" class="button red" onclick="restartDevice()">Restart Device</button>
+            </div>
+        </div>
+
+        <!-- Network Control Settings -->
+        <div class="section-container hidden" id="network-control">
+            <h3 class="section-title">Network Control</h3>
+            <div id="network-adapters" class="section-container">
+                <h4 class="section-title">Network Adapters</h4>
+                <div class="button-group centered">
+                    <!-- Network Adapters will be dynamically populated here -->
+                </div>
+            </div>
+            <div id="wireless-modes" class="section-container">
+                <h4 class="section-title">Wireless Modes</h4>
+                <div class="button-group centered">
+                    <!-- Wireless modes will be dynamically populated here -->
+                </div>
+            </div>
+            <div id="hotspot" class="section-container">
+                <h4 class="section-title">Wireless Hotspot</h4>
+                <div class="button-group centered">
+                    <!-- Hotspot Section -->
+                    <div id="hotspot-section" class="section-container">
+                        <h4 class="section-title">Wireless Hotspot</h4>
+                        <div class="button-group centered">
+                            <button type="button" class="button green" onclick="toggleHotspot()">Toggle Hotspot</button>
+                            <div id="hotspot-status" class="status-message"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Connections Settings -->
+        <div class="section-container hidden" id="network-connections">
+            <h3 class="section-title">Network Connections</h3>
+            <div id="wired-settings" class="section-container">
+                <h4 class="section-title">Wired Settings</h4>
+                <div class="button-group centered">
+                    <button type="button" class="button info" onclick="modifyWiredSettings()">Modify Wired Settings</button>
+                </div>
+            </div>
+            <div id="wireless-settings" class="section-container">
+                <h4 class="section-title">Wireless Settings</h4>
+                <div class="button-group centered">
+                    <!-- Network Adapter Dropdown -->
+                    <label for="network-adapter-select">Select Adapter:</label>
+                    <select id="network-adapter-select" onchange="enableScanButton()">
+                        <option value="">-- Select Adapter --</option>
+                    </select>
+                    <button type="button" class="button info" id="scan-button" onclick="scanForWirelessNetworks()" disabled>Scan for Networks</button>
+                </div>
+                <div id="wireless-networks-list">
+                    <!-- List of wireless networks will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VPN Settings -->
+        <div class="section-container hidden" id="vpn-settings">
+            <h3 class="section-title">VPN Settings (Tailscale)</h3>
+            <div id="tailscale-status" class="status-container">
+                <div class="status-message"></div>
+            </div>
+            <div class="button-group centered">
+                <button type="button" class="button info" id="check-tailscale" onclick="checkTailscaleStatus()">Check Status</button>
+                <button type="button" class="button green" id="install-tailscale" onclick="installTailscale()" style="display: none;">Install Tailscale</button>
+                <button type="button" class="button green" id="enable-tailscale" onclick="toggleTailscale('up')" style="display: none;">Enable VPN</button>
+                <button type="button" class="button red" id="disable-tailscale" onclick="toggleTailscale('down')" style="display: none;">Disable VPN</button>
+            </div>
+            <div id="tailscale-config" class="config-container" style="display: none;">
+                <h4>Configuration</h4>
+                <div class="form-group">
+                    <label for="hostname">Hostname:</label>
+                    <input type="text" id="hostname" name="hostname">
+                </div>
+                <div class="form-group">
+                    <label for="advertise-routes">Advertise Routes:</label>
+                    <input type="text" id="advertise-routes" name="advertise-routes" placeholder="10.0.0.0/24,192.168.1.0/24">
+                </div>
+                <div class="form-group">
+                    <label for="accept-routes">Accept Routes:</label>
+                    <input type="text" id="accept-routes" name="accept-routes" placeholder="10.0.0.0/24,192.168.1.0/24">
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="accept-dns" name="accept-dns">
+                    <label for="accept-dns">Accept DNS</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="shields-up" name="shields-up">
+                    <label for="shields-up">Shields Up (Block Incoming Connections)</label>
+                </div>
+                <button type="button" class="button blue" onclick="updateTailscaleConfig()">Update Configuration</button>
+            </div>
+        </div>
+
+        <!-- Save Settings Button -->
+        <div class="button-group">
+            <button type="button" class="button info" onclick="toggleVisibility('device-control')">Device Control</button>
+            <button type="button" class="button info" onclick="toggleVisibility('service-control')">Service Control</button>
+            <button type="button" class="button info" onclick="toggleVisibility('network-control')">Network Control</button>
+            <button type="button" class="button info" onclick="toggleVisibility('network-connections')">Network Settings</button>
+            <button type="button" class="button info" onclick="toggleVisibility('vpn-settings')">VPN Settings</button>
+            <button type="button" class="button info hidden" onclick="toggleVisibility('hotspot-section')">Hotspot</button>
+        </div>
+        <div class="button-group">
+            <button type="submit" class="button green centered">Save Settings</button>
+            <button type="button" class="button blue" style="display: none;" onclick="window.location.href='/'">Back</button>
+        </div>
+    </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

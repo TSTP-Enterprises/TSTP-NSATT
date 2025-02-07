@@ -1,0 +1,17 @@
+/* Green Theme */
+
+QWidget {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+}
+
+QPushButton {
+    background-color: #43a047;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+QPushButton:hover {
+    background-color: #388e3c;
+}

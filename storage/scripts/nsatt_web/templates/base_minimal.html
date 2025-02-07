@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TSTP NSATT{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>TSTP Network Security/Administration/Testing Tool (NSATT)</h1>
+        <nav>
+            <div class="section-container centered" style="margin:auto;">
+                <div class="button-group">
+                    <div class="button-row">
+                        <form action="/" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Home</button>
+                        </form>
+                        <form action="/console" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Console</button>
+                        </form>
+                        <form action="/nmap" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Nmap Scans</button>
+                        </form>
+                        <form action="/hid" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">HID Control</button>
+                        </form>
+                    </div>
+                    <div class="button-row">
+                        <form action="/metasploit" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Metasploit</button>
+                        </form>
+                        <form action="/wireless" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Wireless Scans</button>
+                        </form>
+                        <form action="/findings" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Network DB</button>
+                        </form>
+                        <form action="/settings" method="get" style="display: inline;">
+                            <button type="submit" class="nav-button button">Settings</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% block content %}
+    {% endblock %}
+
+    <footer>
+        <p>&copy; 2025 TSTP NSATT (Network Security/Administration/Testing Tool)</p>
+        <p><a href="https://www.tstp.xyz">The Solutions To Problems, LLC</a></p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
+
+<style>
+    /* ... existing styles ... */
+
+    .switch-info-container {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+
+    .switch-info-pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .switch-info-pre.collapsed {
+        max-height: 100px;
+        overflow: hidden;
+    }
+
+    .switch-port-controls {
+        margin-top: 10px;
+    }
+
+    .switch-port-controls .button {
+        margin-right: 5px;
+    }
+</style>

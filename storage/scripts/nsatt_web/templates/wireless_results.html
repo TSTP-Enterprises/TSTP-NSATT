@@ -1,0 +1,81 @@
+{% extends "iframe_template.html" %}
+{% block title %}Wireless Scan Results{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Wireless Scan Results for {{ target }}</h2>
+    <p id="scan-status">Scan in progress... Please wait.</p>
+    <div id="scan-result" class="scan-output" style="max-height: 400px; overflow-y: auto;">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>BSSID</th>
+                    <th>Power</th>
+                    <th>Channel</th>
+                    <th>Beacons</th>
+                    <th>Frames</th>
+                    <th>Rate</th>
+                    <th>ESSID</th>
+                    <th>Cipher</th>
+                    <th>Auth</th>
+                    <th>Enc</th>
+                </tr>
+            </thead>
+            <tbody id="network-table-body">
+                <tr><td colspan="10">No networks found yet...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="button-group">
+        <button id="stop-scan" class="button blue" onclick="stopScan()">Stop Scan</button>
+        <button id="save-scan" class="button green" onclick="saveScan()">Save Scan</button>
+        <a class="button blue" href='/wireless'>Run Another Scan</a>
+        <a class="button green" style="display: none;" href='/'>Go back</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const scanResultContainer = document.getElementById("network-table-body");
+        const scanStatus = document.getElementById("scan-status");
+
+        const eventSource = new EventSource("{{ url_for('scan_stream', target=target, scan_type=scan_type, options=','.join(options)) }}");
+        
+        eventSource.onmessage = function(event) {
+            if (event.data.trim()) {
+                scanResultContainer.innerHTML = event.data;
+            }
+        };
+
+        eventSource.onerror = function() {
+            eventSource.close();
+        };
+
+        window.stopScan = function() {
+            fetch("{{ url_for('stop_wireless_scan') }}", {
+                method: 'POST'
+            }).then(response => response.json()).then(data => {
+                alert(data.message);
+                eventSource.close();
+                scanStatus.textContent = "Scan stopped.";
+            });
+        };
+
+        window.saveScan = function() {
+            fetch("{{ url_for('save_wireless_scan', target=target, scan_type=scan_type, options=','.join(options)) }}", {
+                method: 'POST'
+            }).then(response => response.json()).then(data => {
+                if (data.message) {
+                    alert(data.message);
+                } else {
+                    const link = document.createElement('a');
+                    link.href = data.file_url;
+                    link.download = data.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+        };
+    });
+</script>
+{% endblock %}

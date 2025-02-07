@@ -1,0 +1,786 @@
+<!-- live_feed.html -->
+{% extends "iframe_template.html" %}
+{% block title %}Live Feed{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Feed</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-color);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid var(--control-border);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        /* Dark Mode Toggle Button */
+        #themeToggleButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: var(--header-color);
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tab-border);
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid var(--tab-border);
+            border-bottom: none;
+            background-color: var(--tab-bg);
+            color: var(--tab-color);
+            transition: background-color 0.3s, color 0.3s;
+            text-align: center;
+        }
+        .tab.active {
+            background-color: var(--tab-active-bg);
+            color: var(--tab-active-color);
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+                margin-bottom: 20px;
+        }
+        .controls select, .controls button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid var(--control-border);
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--control-bg);
+            color: var(--control-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .controls button:hover, .controls select:hover, .controls select:focus {
+            background-color: var(--control-hover-bg);
+            border-color: var(--control-hover-border);
+            color: var(--control-hover-color);
+        }
+        /* Video Stream */
+        #videoStream {
+            width: 100%;
+            height: 500px;
+            border: 2px solid var(--video-border);
+            border-radius: 8px;
+            background-color: #000;
+            object-fit: cover;
+        }
+        /* Status */
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .status.success {
+            color: #27ae60;
+        }
+        .status.error {
+            color: #c0392b;
+        }
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--footer-color);
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            #videoStream {
+                height: 300px;
+            }
+        }
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: var(--container-bg);
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 20px;
+            border: 1px solid var(--control-border);
+            border-radius: 8px;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .close {
+            color: var(--text-color);
+            float: right;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #e74c3c;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .modal-buttons .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .modal-buttons .rename-btn {
+            background-color: #f1c40f;
+            color: white;
+        }
+        .modal-buttons .download-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .modal-buttons button:hover {
+            opacity: 0.8;
+        }
+        /* Light Theme Variables */
+        :root {
+            --header-bg: #2c3e50;
+            --header-color: #ecf0f1;
+            --container-bg: #f5f5f5;
+            --control-border: #bdc3c7;
+            --control-bg: #ffffff;
+            --control-color: #333;
+            --control-hover-bg: #e0e0e0;
+            --control-hover-border: #b3b3b3;
+            --control-hover-color: #333;
+            --video-border: #bdc3c7;
+            --footer-color: #7f8c8d;
+            --tab-border: #bdc3c7;
+            --tab-bg: #ffffff;
+            --tab-color: #333;
+            --tab-active-bg: #3498db;
+            --tab-active-color: #ffffff;
+            --text-color: #333;
+        }
+        /* Dark Theme Variables */
+        [data-theme="dark"] {
+            --header-bg: #1f2d3d;
+            --header-color: #ecf0f1;
+            --container-bg: #2c3e50;
+            --control-border: #7f8c8d;
+            --control-bg: #3a5068;
+            --control-color: #ecf0f1;
+            --control-hover-bg: #4a627d;
+            --control-hover-border: #95a5a6;
+            --control-hover-color: #ecf0f1;
+            --video-border: #7f8c8d;
+            --footer-color: #95a5a6;
+            --tab-border: #7f8c8d;
+            --tab-bg: #3a5068;
+            --tab-color: #ecf0f1;
+            --tab-active-bg: #3498db;
+            --tab-active-color: #ffffff;
+            --text-color: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Live Feed Control Panel</h1>
+        <button id="themeToggleButton" onclick="toggleTheme()">🌙</button>
+    </header>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('live')">Live Feed</div>
+            <div class="tab" onclick="switchTab('saves')">Saves</div>
+        </div>
+
+        <!-- Live Feed Tab Content -->
+        <div id="live" class="tab-content active">
+            <div class="controls">
+                <select id="inputDevice" onchange="logEvent('Device selected: ' + this.value)">
+                    <option value="">Loading devices...</option>
+                </select>
+                <button onclick="startStream()">Start Stream</button>
+                <button onclick="stopStream()">Stop Stream</button>
+                <button id="recordButton" onclick="toggleRecording()">Start Recording</button>
+                <button onclick="refreshDevices()">Refresh Devices</button>
+                <button onclick="takeScreenshot()">Take Screenshot</button>
+            </div>
+            <video id="videoStream" autoplay muted></video>
+            <div id="videoStatus" class="status"></div>
+        </div>
+
+        <!-- Saves Tab Content -->
+        <div id="saves" class="tab-content">
+            <h2>Saved Screenshots</h2>
+            <div id="screenshots" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            <h2>Saved Videos</h2>
+            <div id="videos" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 Live Feed & VNC Control Panel
+    </footer>
+
+    <!-- Modal Structure -->
+    <div id="fileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">File Actions</h3>
+            <p id="modalFileName">Filename: </p>
+            <div class="modal-buttons">
+                <button class="delete-btn" onclick="deleteFile()">Delete</button>
+                <button class="rename-btn" onclick="showRenameInput()">Rename</button>
+                <button class="download-btn" onclick="downloadFile()">Download</button>
+            </div>
+            <div id="renameSection" style="display: none; margin-top: 10px;">
+                <input type="text" id="newFilename" placeholder="New filename">
+                <button onclick="renameFile()">Confirm Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const toggleButton = document.getElementById('themeToggleButton');
+            if (html.getAttribute('data-theme') === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                toggleButton.textContent = '☀️';
+            } else {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                toggleButton.textContent = '🌙';
+            }
+        }
+
+        // Load Theme Preference and Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const toggleButton = document.getElementById('themeToggleButton');
+            if (savedTheme === 'dark') {
+                toggleButton.textContent = '☀️';
+            } else {
+                toggleButton.textContent = '🌙';
+            }
+            fetchDevices();
+        });
+
+        // Tab Switching
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.textContent.toLowerCase().includes(tabName));
+            });
+
+            contents.forEach(content => {
+                content.classList.toggle('active', content.id === tabName);
+            });
+
+            if (tabName === 'saves') {
+                loadSaves();
+            }
+        }
+
+        // Load Saves (Screenshots and Videos)
+        async function loadSaves() {
+            try {
+                const response = await fetch('/live_feed/get_saves');
+                if (!response.ok) throw new Error('Failed to fetch saves.');
+                const data = await response.json();
+
+                // Load Screenshots
+                const screenshotsDiv = document.getElementById('screenshots');
+                screenshotsDiv.innerHTML = '';
+                data.screenshots.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.width = '200px';
+                    img.style.height = 'auto';
+                    img.style.border = '1px solid #ccc';
+                    img.style.borderRadius = '4px';
+                    img.style.cursor = 'pointer';
+                    img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    img.addEventListener('click', () => {
+                        openModal('screenshot', src);
+                    });
+                    screenshotsDiv.appendChild(img);
+                });
+
+                // Load Videos
+                const videosDiv = document.getElementById('videos');
+                videosDiv.innerHTML = '';
+                data.videos.forEach(src => {
+                    const videoContainer = document.createElement('div');
+                    videoContainer.style.position = 'relative';
+
+                    const video = document.createElement('video');
+                    video.width = 320;
+                    video.height = 240;
+                    video.src = src;
+                    video.style.border = '1px solid #ccc';
+                    video.style.borderRadius = '4px';
+                    video.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    video.style.cursor = 'pointer';
+                    video.addEventListener('click', () => {
+                        openModal('video', src);
+                    });
+
+                    videoContainer.appendChild(video);
+                    videosDiv.appendChild(videoContainer);
+                });
+            } catch (error) {
+                console.error('Error loading saves:', error);
+                alert('Failed to load saved items.');
+            }
+        }
+
+        // Screenshot Functionality
+        async function takeScreenshot() {
+            try {
+                const video = document.getElementById('videoStream');
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataURL = canvas.toDataURL('image/png');
+
+                const response = await fetch('/live_feed/save_screenshot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataURL })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    logEvent('Screenshot taken and saved successfully.');
+                    displayStatus('videoStatus', 'Screenshot saved.', 'success');
+                } else {
+                    logError(`Failed to save screenshot: ${result.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to save screenshot: ${result.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to save screenshot: ${result.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error taking screenshot: ${error}`);
+                console.error('Error taking screenshot:', error);
+                displayStatus('videoStatus', 'Failed to take screenshot.', 'error');
+                alert('Failed to take screenshot.');
+            }
+        }
+
+        // Stream Controls
+        async function fetchDevices() {
+            try {
+                const response = await fetch(`/live_feed/list_devices`);
+                if (!response.ok) throw new Error('Failed to fetch devices');
+                const data = await response.json();
+                const deviceSelect = document.getElementById('inputDevice');
+                deviceSelect.innerHTML = '';
+                data.devices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device;
+                    option.textContent = device;
+                    deviceSelect.appendChild(option);
+                });
+                if (data.devices.length > 0) {
+                    deviceSelect.value = data.devices[0];
+                    logEvent(`Device list loaded. Selected: ${data.devices[0]}`);
+                } else {
+                    logError('No video devices found.');
+                    displayStatus('videoStatus', 'No video devices found.', 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching devices:', error);
+                logError('Failed to load devices.');
+                displayStatus('videoStatus', 'Failed to load devices.', 'error');
+                alert('Failed to load devices.');
+            }
+        }
+
+        async function refreshDevices() {
+            logEvent('Refreshing device list...');
+            await fetchDevices();
+        }
+
+        async function startStream() {
+            try {
+                const device = document.getElementById('inputDevice').value;
+                if (!device) {
+                    alert('Please select a valid video device.');
+                    return;
+                }
+                const response = await fetch(`/live_feed/start_stream`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input_device: device })
+                });
+                const data = await response.json();
+                if (data.status === 'stream_started') {
+                    logEvent('Stream started successfully.');
+                    initializeVideoStream(data.stream_path);
+                    displayStatus('videoStatus', 'Stream started.', 'success');
+                } else if (data.status === 'stream_already_running') {
+                    logEvent('Stream is already running.');
+                    initializeVideoStream(data.stream_path);
+                    displayStatus('videoStatus', 'Stream is already running.', 'success');
+                } else {
+                    logError(`Failed to start stream: ${data.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to start stream: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to start stream: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error starting stream: ${error}`);
+                console.error('Error starting stream:', error);
+                displayStatus('videoStatus', 'Failed to start stream.', 'error');
+                alert('Failed to start stream.');
+            }
+        }
+
+        async function stopStream() {
+            try {
+                const response = await fetch(`/live_feed/stop_stream`, { method: 'POST' });
+                const data = await response.json();
+                if (data.status === 'stream_stopped') {
+                    logEvent('Stream stopped successfully.');
+                    const video = document.getElementById('videoStream');
+                    video.src = '';
+                    video.load();
+                    displayStatus('videoStatus', 'Stream stopped.', 'success');
+                    alert('Stream stopped successfully.');
+                } else if (data.status === 'no_stream_running') {
+                    logEvent('No stream was running.');
+                    displayStatus('videoStatus', 'No stream was running.', 'error');
+                    alert('No stream was running.');
+                } else {
+                    logError(`Failed to stop stream: ${data.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to stop stream: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to stop stream: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error stopping stream: ${error}`);
+                console.error('Error stopping stream:', error);
+                displayStatus('videoStatus', 'Failed to stop stream.', 'error');
+                alert('Failed to stop stream.');
+            }
+        }
+
+        // Initialize Video Stream with HLS.js
+        function initializeVideoStream(streamPath) {
+            const video = document.getElementById('videoStream');
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(streamPath);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            }
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamPath;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            }
+            else {
+                alert('HLS not supported in this browser.');
+                logError('HLS not supported in this browser.');
+            }
+        }
+
+        // Recording Controls
+        async function toggleRecording() {
+            const button = document.getElementById('recordButton');
+            if (button.textContent === 'Start Recording') {
+                await startRecording();
+            } else {
+                await stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const response = await fetch('/live_feed/start_recording', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.status === 'recording_started') {
+                    logEvent('Recording started successfully.');
+                    displayStatus('videoStatus', 'Recording started.', 'success');
+                    const button = document.getElementById('recordButton');
+                    button.textContent = 'Stop Recording';
+                } else if (data.status === 'recording_already_running') {
+                    logEvent('Recording is already running.');
+                    displayStatus('videoStatus', 'Recording is already running.', 'error');
+                } else {
+                    logError(`Failed to start recording: ${data.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to start recording: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to start recording: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error starting recording: ${error}`);
+                console.error('Error starting recording:', error);
+                displayStatus('videoStatus', 'Failed to start recording.', 'error');
+                alert('Failed to start recording.');
+            }
+        }
+
+        async function stopRecording() {
+            try {
+                const response = await fetch('/live_feed/stop_recording', { method: 'POST' });
+                const data = await response.json();
+                if (data.status === 'recording_stopped') {
+                    logEvent('Recording stopped successfully.');
+                    displayStatus('videoStatus', 'Recording stopped.', 'success');
+                    const button = document.getElementById('recordButton');
+                    button.textContent = 'Start Recording';
+                    alert('Recording stopped successfully.');
+                } else if (data.status === 'no_recording_running') {
+                    logEvent('No recording was running.');
+                    displayStatus('videoStatus', 'No recording was running.', 'error');
+                    alert('No recording was running.');
+                } else {
+                    logError(`Failed to stop recording: ${data.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to stop recording: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to stop recording: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error stopping recording: ${error}`);
+                console.error('Error stopping recording:', error);
+                displayStatus('videoStatus', 'Failed to stop recording.', 'error');
+                alert('Failed to stop recording.');
+            }
+        }
+
+        // Logging Functions
+        function logEvent(message) {
+            console.log(`[EVENT]: ${message}`);
+        }
+
+        function logError(message) {
+            console.error(`[ERROR]: ${message}`);
+        }
+
+        // Display Status Messages
+        function displayStatus(elementId, message, statusType) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.textContent = message;
+            statusElement.className = `status ${statusType}`;
+            setTimeout(() => {
+                statusElement.textContent = '';
+                statusElement.className = 'status';
+            }, 5000);
+        }
+
+        // Modal Functionality
+        let currentFile = { type: '', name: '' };
+
+        function openModal(fileType, src) {
+            currentFile.type = fileType;
+            currentFile.name = src.split('/').pop();
+            document.getElementById('modalTitle').textContent = `${fileType.charAt(0).toUpperCase() + fileType.slice(1)} Actions`;
+            document.getElementById('modalFileName').textContent = `Filename: ${currentFile.name}`;
+            document.getElementById('renameSection').style.display = 'none';
+            document.getElementById('fileModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('fileModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('fileModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // File Actions
+        async function deleteFile() {
+            if (!confirm(`Are you sure you want to delete ${currentFile.name}?`)) return;
+            try {
+                const response = await fetch('/live_feed/delete_file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename: currentFile.name, file_type: currentFile.type })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    logEvent(`${currentFile.type} deleted: ${currentFile.name}`);
+                    displayStatus('videoStatus', `${currentFile.type.charAt(0).toUpperCase() + currentFile.type.slice(1)} deleted.`, 'success');
+                    closeModal();
+                    if (document.querySelector('.tab.active').id === 'saves') {
+                        loadSaves();
+                    }
+                } else {
+                    logError(`Failed to delete file: ${data.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to delete file: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to delete file: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error deleting file: ${error}`);
+                console.error('Error deleting file:', error);
+                displayStatus('videoStatus', 'Failed to delete file.', 'error');
+                alert('Failed to delete file.');
+            }
+        }
+
+        function showRenameInput() {
+            document.getElementById('renameSection').style.display = 'block';
+        }
+
+        async function renameFile() {
+            const newFilename = document.getElementById('newFilename').value.trim();
+            if (!newFilename) {
+                alert('Please enter a new filename.');
+                return;
+            }
+            try {
+                const response = await fetch('/live_feed/rename_file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        old_filename: currentFile.name, 
+                        new_filename: newFilename, 
+                        file_type: currentFile.type 
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    logEvent(`${currentFile.type} renamed from ${currentFile.name} to ${newFilename}`);
+                    displayStatus('videoStatus', `${currentFile.type.charAt(0).toUpperCase() + currentFile.type.slice(1)} renamed.`, 'success');
+                    closeModal();
+                    if (document.querySelector('.tab.active').id === 'saves') {
+                        loadSaves();
+                    }
+                } else {
+                    logError(`Failed to rename file: ${data.message || 'Unknown error.'}`);
+                    displayStatus('videoStatus', `Failed to rename file: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to rename file: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error renaming file: ${error}`);
+                console.error('Error renaming file:', error);
+                displayStatus('videoStatus', 'Failed to rename file.', 'error');
+                alert('Failed to rename file.');
+            }
+        }
+
+        async function downloadFile() {
+            try {
+                const fileUrl = `/live_feed/download_file/${currentFile.type}/${currentFile.name}`;
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = currentFile.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                logEvent(`${currentFile.type} downloaded: ${currentFile.name}`);
+                displayStatus('videoStatus', `${currentFile.type.charAt(0).toUpperCase() + currentFile.type.slice(1)} downloaded.`, 'success');
+                closeModal();
+            } catch (error) {
+                logError(`Error downloading file: ${error}`);
+                console.error('Error downloading file:', error);
+                displayStatus('videoStatus', 'Failed to download file.', 'error');
+                alert('Failed to download file.');
+            }
+        }
+
+        // Fetch and Display HLS Stream
+        function initializeVideoStream(streamPath) {
+            const video = document.getElementById('videoStream');
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(streamPath);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    logError(`HLS.js error: ${data.type} - ${data.details}`);
+                    displayStatus('videoStatus', `HLS.js error: ${data.type}`, 'error');
+                });
+            }
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamPath;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            }
+            else {
+                alert('HLS not supported in this browser.');
+                logError('HLS not supported in this browser.');
+            }
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

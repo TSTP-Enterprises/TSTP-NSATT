@@ -1,0 +1,322 @@
+{% extends "iframe_template.html" %}
+{% block title %}Metasploit Console{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Metasploit</h2>
+
+    <div id="controls-container" class="section-container">
+        <div class="button-group centered">
+            <div class="button-spinner-container">
+                <button id="start-stop-button" class="button blue" style="width: 100%;">Start MSFConsole</button>
+                <div id="loading-spinner" class="spinner" style="display: none;"></div>
+            </div>
+            <button id="toggle-console" class="button" style="display:none;">Show Console</button>
+            <button id="toggle-search" class="button" style="display:none;">Show Search</button>
+            <button id="toggle-search-results" class="button" style="display:none;">Show Results</button>
+            <button id="toggle-module-options" class="button" style="display:none;">Show Options</button>
+            <button id="previous-sessions-button" class="button" style="display:none;">Previous Sessions</button>
+            <button id="save-console" class="button" style="display:none;">Save Console</button>
+        </div>
+    </div>
+
+    <div id="search-container" class="section-container hidden">
+        <h3 class="section-title">Search Metasploit Modules</h3>
+        <input type="text" id="search_term" name="search_term" placeholder="Enter search term" required style="width: 80%; height: 40px;">
+        <button id="search-button" class="button green" style="height: 40px;">Search</button>
+    </div>
+
+    <div id="results-container" class="section-container hidden">
+        <h3 class="section-title">Search Results</h3>
+        <table class="table-container">
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="results"></tbody>
+        </table>
+        <button id="clear-results" class="button red" style="display: none;">Clear Results</button>
+    </div>
+
+    <div id="module-options-container" class="section-container hidden">
+        <h3 class="section-title">Module Options</h3>
+        <form id="module-options-form"></form>
+    </div>
+
+    <div id="console-container" class="section-container hidden">
+        <h3 class="section-title">Console</h3>
+        <pre id="console-output" class="console-output"></pre>
+        <input type="text" id="command" name="command" placeholder="Enter Command" style="width: 80%;">
+        <button id="run-command" class="button green">Send</button>
+        <button id="cancel-command" class="button red">Cancel</button>
+    </div>
+</div>
+
+<script>
+// Function to update UI based on console state
+function updateUI(status) {
+    const button = document.getElementById('start-stop-button');
+    const toggleButtons = [
+        'toggle-console', 'toggle-search', 'toggle-search-results',
+        'toggle-module-options', 'previous-sessions-button', 'save-console'
+    ];
+    const spinner = document.getElementById('loading-spinner');
+
+    if (status === 'starting' || status === 'stopping') {
+        button.style.display = 'none';
+        spinner.style.display = 'block';
+    } else if (status === 'started') {
+        spinner.style.display = 'none';
+        button.style.display = 'block';
+        button.textContent = 'Stop MSFConsole';
+        toggleButtons.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'inline-block';
+            }
+        });
+    } else if (status === 'stopped') {
+        spinner.style.display = 'none';
+        button.style.display = 'block';
+        button.textContent = 'Start MSFConsole';
+        toggleButtons.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+    } else {
+        // Handle error state
+        spinner.style.display = 'none';
+        button.style.display = 'block';
+        button.textContent = 'Start MSFConsole';
+        alert('An error occurred while updating the MSFConsole status.');
+    }
+}
+
+// Check and update MSFConsole status on page load
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/metasploit/console_status', { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            updateUI(data.status);
+        })
+        .catch(error => {
+            console.error('Error fetching console status:', error);
+            alert('Error fetching console status.');
+        });
+});
+
+// Toggle MSFConsole
+document.getElementById('start-stop-button').addEventListener('click', function() {
+    const currentStatus = this.textContent === 'Start MSFConsole' ? 'starting' : 'stopping';
+    updateUI(currentStatus);
+    
+    fetch('/metasploit/toggle_msfconsole', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'started' || data.status === 'stopped') {
+                updateUI(data.status);
+            } else {
+                updateUI('error');
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling MSFConsole:', error);
+            updateUI('error');
+        });
+});
+
+// Search Modules
+document.getElementById('search-button').addEventListener('click', function() {
+    const searchTerm = document.getElementById('search_term').value;
+    if (!searchTerm) {
+        alert('Please enter a search term.');
+        return;
+    }
+    fetch('/metasploit/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ search_term: searchTerm })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update Search Results
+        const resultsTbody = document.getElementById('results');
+        resultsTbody.innerHTML = '';  // Clear previous results
+        if (data.search_results && data.search_results.length > 0) {
+            document.getElementById('results-container').classList.remove('hidden');
+            resultsTbody.innerHTML = data.search_results.map(result => `
+                <tr>
+                    <td>${result.module}</td>
+                    <td>${result.description}</td>
+                    <td><button class="button info" data-module="${result.module}">Select</button></td>
+                </tr>
+            `).join('');
+            document.getElementById('clear-results').style.display = 'block';
+        } else {
+            resultsTbody.innerHTML = '<tr><td colspan="3">No results found</td></tr>';
+            document.getElementById('clear-results').style.display = 'none';
+        }
+
+        // Update Console Output
+        if (data.console_output) {
+            document.getElementById('console-container').classList.remove('hidden');
+            document.getElementById('console-output').textContent = data.console_output;
+        }
+    })
+    .catch(error => {
+        console.error('Error searching modules:', error);
+        alert('Error searching modules.');
+    });
+});
+
+// Clear Results
+document.getElementById('clear-results').addEventListener('click', function() {
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('results-container').classList.add('hidden');
+    this.style.display = 'none';
+});
+
+// Select Module and Get Options
+document.getElementById('results').addEventListener('click', function(e) {
+    if (e.target.classList.contains('info')) {
+        const moduleName = e.target.getAttribute('data-module');
+        fetch('/metasploit/get_module_options', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ module_name: moduleName })
+        })
+        .then(response => response.json())
+        .then(options => {
+            if (options.error) {
+                alert(options.error);
+                return;
+            }
+            document.getElementById('module-options-container').classList.remove('hidden');
+            document.getElementById('results-container').classList.add('hidden');
+
+            const optionsForm = document.getElementById('module-options-form');
+            optionsForm.innerHTML = options.map(option => `
+                <label for="${option.name}">${option.name} (${option.required ? 'Required' : 'Optional'})</label>
+                <input type="text" id="${option.name}" name="${option.name}" placeholder="${option.description}" ${option.required ? 'required' : ''}>
+            `).join('');
+            optionsForm.innerHTML += '<button type="button" class="button green" id="run-module">Run</button>';
+        })
+        .catch(error => {
+            console.error('Error retrieving module options:', error);
+            alert('Error retrieving module options.');
+        });
+    }
+});
+
+// Run Module (this is a placeholder; actual implementation depends on your backend)
+document.getElementById('module-options-container').addEventListener('click', function(e) {
+    if (e.target.id === 'run-module') {
+        alert('Run Module functionality is not implemented yet.');
+        // Implement the logic to run the module with the provided options
+    }
+});
+
+// Toggle Console
+document.getElementById('toggle-console').addEventListener('click', function() {
+    document.getElementById('console-container').classList.toggle('hidden');
+    this.textContent = document.getElementById('console-container').classList.contains('hidden') ? 'Show Console' : 'Hide Console';
+});
+
+// Toggle Search
+document.getElementById('toggle-search').addEventListener('click', function() {
+    document.getElementById('search-container').classList.toggle('hidden');
+    this.textContent = document.getElementById('search-container').classList.contains('hidden') ? 'Show Search' : 'Hide Search';
+});
+
+// Save Console Output
+document.getElementById('save-console').addEventListener('click', function() {
+    const output = document.getElementById('console-output').textContent;
+    if (!output) {
+        alert('No console output to save.');
+        return;
+    }
+    const blob = new Blob([output], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'console_output.txt';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+});
+
+// Fetch Console Output Periodically
+function fetchConsoleOutput() {
+    fetch('/metasploit/console_output', { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.console_output) {
+                const consoleOutput = document.getElementById('console-output');
+                consoleOutput.textContent = data.console_output;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching console output:', error);
+        });
+}
+
+// Poll every 5 seconds
+setInterval(fetchConsoleOutput, 5000);
+
+</script>
+
+<style>
+.console-output {
+    background-color: black;
+    color: green;
+    padding: 10px;
+    height: 400px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+    border: 1px solid #ccc;
+    margin-top: 20px;
+}
+
+.section-container.hidden {
+    display: none;
+}
+
+.nested-table {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.module-options.hidden {
+    display: none;
+}
+
+.button-spinner-container {
+    position: relative;
+    width: 100%;
+}
+
+.spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+</style>
+
+{% endblock %}

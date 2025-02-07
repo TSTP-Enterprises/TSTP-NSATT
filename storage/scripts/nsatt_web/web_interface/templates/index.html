@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="smtp-settings">
+    <h2>SMTP Settings</h2>
+    <form action="{{ url_for('update_smtp') }}" method="POST">
+        <div class="form-group">
+            <label for="smtp_server">SMTP Server:</label>
+            <input type="text" id="smtp_server" name="smtp_server" value="{{ smtp_config.smtp_server }}" required>
+        </div>
+        <div class="form-group">
+            <label for="smtp_port">SMTP Port:</label>
+            <input type="number" id="smtp_port" name="smtp_port" value="{{ smtp_config.smtp_port }}" required>
+        </div>
+        <div class="form-group">
+            <label for="smtp_user">SMTP Username:</label>
+            <input type="text" id="smtp_user" name="smtp_user" value="{{ smtp_config.smtp_user }}">
+        </div>
+        <div class="form-group">
+            <label for="smtp_password">SMTP Password:</label>
+            <input type="password" id="smtp_password" name="smtp_password" value="{{ smtp_config.smtp_password }}">
+        </div>
+        <div class="form-group">
+            <label for="recipient_email">Recipient Email:</label>
+            <input type="email" id="recipient_email" name="recipient_email" value="{{ smtp_config.recipient_email }}" required>
+        </div>
+        <input type="submit" value="Update SMTP Settings">
+    </form>
+</section>
+
+<section class="network-interfaces">
+    <h2>Network Interfaces</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Interface</th>
+                <th>IP Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for iface in interfaces %}
+            <tr>
+                <td>{{ iface.name }}</td>
+                <td>{{ iface.ip }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="service-toggle">
+    <h2>Network Manager Service</h2>
+    {% if autostart_exists %}
+    <form action="{{ url_for('toggle_service_route') }}" method="POST">
+        <input type="hidden" name="action" value="disable">
+        <input type="submit" value="Disable Service">
+    </form>
+    {% else %}
+    <form action="{{ url_for('toggle_service_route') }}" method="POST">
+        <input type="hidden" name="action" value="enable">
+        <input type="submit" value="Enable Service">
+    </form>
+    {% endif %}
+</section>
+
+<section class="log-console">
+    <h2>Network Logs</h2>
+    <div class="log-container">
+        <pre id="logContent"></pre>
+    </div>
+    <button onclick="refreshLogs()" class="refresh-btn">Refresh Logs</button>
+</section>
+
+<script>
+async function refreshLogs() {
+    try {
+        const response = await fetch("{{ url_for('get_logs') }}");
+        const data = await response.json();
+        const logContent = document.getElementById('logContent');
+        if (data.logs) {
+            logContent.textContent = data.logs;
+        } else {
+            logContent.textContent = 'No logs available';
+        }
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+        document.getElementById('logContent').textContent = 'Error loading logs';
+    }
+}
+
+// Refresh logs every 30 seconds
+setInterval(refreshLogs, 30000);
+
+// Initial load
+document.addEventListener('DOMContentLoaded', refreshLogs);
+</script>
+
+<style>
+.log-console {
+    margin-top: 2rem;
+}
+
+.log-container {
+    background-color: #1a1a1a;
+    color: #00ff00;
+    padding: 1rem;
+    border-radius: 4px;
+    height: 400px;
+    overflow-y: auto;
+    font-family: monospace;
+}
+
+.refresh-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    background-color: #45a049;
+}
+
+pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,662 @@
+{% extends "iframe_template.html" %}
+{% block title %}HID Controller{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>HID Controller</h2>
+
+    <div class="section-container">
+        <h3 class="section-title">Switch Mode</h3>
+        <button id="switch-to-keyboard" class="button green" style="width: 100%;" onclick="switchToKeyboardMode()">Switch to Keyboard Mode</button>
+        <button id="switch-to-storage" class="button blue" style="width: 100%; margin-top: 10px;" onclick="switchToStorageMode()">Switch to Storage Mode</button>
+        <button id="switch-to-normal" class="button red" style="width: 100%; margin-top: 10px;" onclick="switchToNormalMode()">Switch to Normal Mode</button>
+    </div>
+
+    <div id="keyboard-settings" class="section-container hidden">
+        <h3 class="section-title">Keyboard Settings</h3>
+        <select id="usb-device-selector" class="button" style="width: 100%;"></select>
+        <select id="script-selector" class="button" style="width: 100%; margin-top: 10px;"></select>
+        <textarea id="keyboard-script" placeholder="Enter commands for keyboard emulation..." style="width: 100%; height: 150px; margin-top: 10px;"></textarea>
+        <div class="button-row">
+            <button id="save-keyboard-script" class="button blue" style="margin-top: 10px;" onclick="saveKeyboardScript()">Save Keyboard Script</button>
+            <button id="run-keyboard-script" class="button green" style="margin-top: 10px;" onclick="runKeyboardScript()">Run Keyboard Script</button>
+            <button id="clear-keyboard-script" class="button red" style="margin-top: 10px;" onclick="clearKeyboardScript()">Clear</button>
+            <button id="create-script-button" class="button orange" style="margin-top: 10px;" onclick="createScript()">Create Script</button>
+            <button id="disable-keyboard-mode" class="button red" style="margin-top: 10px;" onclick="disableKeyboardMode()">Disable Keyboard Mode</button>
+        </div>
+    </div>
+
+    <div id="storage-settings" class="section-container hidden">
+        <h3 class="section-title">Storage Settings</h3>
+        <div id="file-explorer" class="file-explorer" style="width: 100%; height: 300px; overflow-y: auto; border: 1px solid #ccc; margin-top: 10px;"></div>
+        <button id="refresh-file-explorer" class="button blue" style="width: 100%; margin-top: 10px;" onclick="refreshFileExplorer()">Refresh File Explorer</button>
+        <button id="disable-storage-mode" class="button red" style="width: 100%; margin-top: 10px;" onclick="disableStorageMode()">Disable Storage Mode</button>
+    </div>
+
+    <div id="create-script" class="section-container hidden">
+        <h3 class="section-title">Create Script</h3>
+        <textarea id="create-script-content" placeholder="Enter your script..." style="width: 100%; height: 150px;"></textarea>
+        <div class="button-row">
+            <button id="windows-key" class="button gray" onclick="insertKey('Windows')">Windows</button>
+            <button id="enter-key" class="button gray" onclick="insertKey('Enter')">Enter</button>
+            <button id="backspace-key" class="button gray" onclick="insertKey('Backspace')">Backspace</button>
+            <button id="tab-key" class="button gray" onclick="insertKey('Tab')">Tab</button>
+            <button id="up-arrow" class="button gray" onclick="insertKey('Up')">Up</button>
+            <button id="down-arrow" class="button gray" onclick="insertKey('Down')">Down</button>
+            <button id="left-arrow" class="button gray" onclick="insertKey('Left')">Left</button>
+            <button id="right-arrow" class="button gray" onclick="insertKey('Right')">Right</button>
+            <button id="f1-key" class="button gray" onclick="insertKey('F1')">F1</button>
+            <button id="f2-key" class="button gray" onclick="insertKey('F2')">F2</button>
+            <button id="f3-key" class="button gray" onclick="insertKey('F3')">F3</button>
+            <button id="f4-key" class="button gray" onclick="insertKey('F4')">F4</button>
+            <button id="f5-key" class="button gray" onclick="insertKey('F5')">F5</button>
+            <button id="f6-key" class="button gray" onclick="insertKey('F6')">F6</button>
+            <button id="f7-key" class="button gray" onclick="insertKey('F7')">F7</button>
+            <button id="f8-key" class="button gray" onclick="insertKey('F8')">F8</button>
+            <button id="f9-key" class="button gray" onclick="insertKey('F9')">F9</button>
+            <button id="f10-key" class="button gray" onclick="insertKey('F10')">F10</button>
+            <button id="f11-key" class="button gray" onclick="insertKey('F11')">F11</button>
+            <button id="f12-key" class="button gray" onclick="insertKey('F12')">F12</button>
+        </div>
+        <button id="convert-script" class="button blue" style="width: 100%; margin-top: 10px;" onclick="convertScript()">Convert</button>
+        <button id="clear-script" class="button red" style="width: 100%; margin-top: 10px;" onclick="clearScript()">Clear</button>
+        <button id="save-script" class="button green" style="width: 100%; margin-top: 10px;" onclick="saveScript()">Save Script</button>
+        <pre id="preview-script" class="console-output hidden"></pre>
+    </div>
+
+    <div id="status-container" class="section-container hidden">
+        <h3 class="section-title">Current Status</h3>
+        <pre id="hid-status" class="console-output"></pre>
+    </div>
+</div>
+
+<script>
+document.getElementById('switch-to-keyboard').addEventListener('click', function() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'keyboard' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            loadUSBDevices();  // Load USB devices
+            loadScripts();  // Load available scripts
+            document.getElementById('storage-settings').classList.add('hidden');
+            document.getElementById('keyboard-settings').classList.remove('hidden');
+            document.getElementById('status-container').classList.remove('hidden');
+            updateStatus();
+        } else if (data.error) {
+            alert(data.error);
+            console.error(data.error);
+        }
+    })
+    .catch(error => {
+        alert('An error occurred while switching to keyboard mode.');
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('switch-to-storage').addEventListener('click', function() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'storage' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            loadFiles('/');  // Load root directory files
+            document.getElementById('keyboard-settings').classList.add('hidden');
+            document.getElementById('storage-settings').classList.remove('hidden');
+            document.getElementById('status-container').classList.remove('hidden');
+            updateStatus();
+        } else if (data.error) {
+            alert(data.error);
+            console.error(data.error);
+        }
+    })
+    .catch(error => {
+        alert('An error occurred while switching to storage mode.');
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('disable-keyboard-mode').addEventListener('click', function() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'off' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            document.getElementById('keyboard-settings').classList.add('hidden');
+            document.getElementById('status-container').classList.add('hidden');
+            updateStatus();
+        } else if (data.error) {
+            alert(data.error);
+            console.error(data.error);
+        }
+    })
+    .catch(error => {
+        alert('An error occurred while disabling keyboard mode.');
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('disable-storage-mode').addEventListener('click', function() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'off' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            document.getElementById('storage-settings').classList.add('hidden');
+            document.getElementById('status-container').classList.add('hidden');
+            updateStatus();
+        } else if (data.error) {
+            alert(data.error);
+            console.error(data.error);
+        }
+    })
+    .catch(error => {
+        alert('An error occurred while disabling storage mode.');
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('save-keyboard-script').addEventListener('click', function() {
+    const scriptName = document.getElementById('script-selector').value;
+    const selectedDevice = document.getElementById('usb-device-selector').value;
+    fetch('/hid/set_keyboard_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_name: scriptName, usb_device: selectedDevice })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+        }
+    });
+});
+
+document.getElementById('run-keyboard-script').addEventListener('click', function() {
+    const scriptName = document.getElementById('script-selector').value;
+    const selectedDevice = document.getElementById('usb-device-selector').value;
+
+    fetch('/hid/run_keyboard_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_name: scriptName, usb_device: selectedDevice })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+        } else if (data.error) {
+            alert(data.error);
+        }
+    });
+});
+
+
+document.getElementById('clear-keyboard-script').addEventListener('click', function() {
+    document.getElementById('keyboard-script').value = '';
+});
+
+document.getElementById('create-script-button').addEventListener('click', function() {
+    document.getElementById('create-script').classList.toggle('hidden');
+});
+
+document.getElementById('convert-script').addEventListener('click', function() {
+    const scriptContent = document.getElementById('create-script-content').value;
+    fetch('/hid/convert_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_content: scriptContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.converted_script) {
+            document.getElementById('preview-script').textContent = data.converted_script;
+            document.getElementById('preview-script').classList.remove('hidden');
+        }
+    });
+});
+
+document.getElementById('clear-script').addEventListener('click', function() {
+    document.getElementById('create-script-content').value = '';
+    document.getElementById('preview-script').textContent = '';
+    document.getElementById('preview-script').classList.add('hidden');
+});
+
+document.getElementById('save-script').addEventListener('click', function() {
+    const scriptContent = document.getElementById('preview-script').textContent.trim();
+    const scriptName = prompt("Enter script name:", "custom_script.sh");
+    
+    if (!scriptContent) {
+        alert("Script content is empty. Please generate a script before saving.");
+        return;
+    }
+
+    if (scriptName) {
+        fetch('/hid/save_script', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script_content: scriptContent, script_name: scriptName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                loadScripts();  // Reload scripts after saving
+            } else if (data.error) {
+                alert(data.error);
+            }
+        });
+    }
+});
+
+document.getElementById('windows-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[Windows] ';
+});
+
+document.getElementById('enter-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[Enter]\n';
+});
+
+document.getElementById('backspace-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[Backspace] ';
+});
+
+document.getElementById('tab-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[Tab] ';
+});
+
+document.getElementById('up-arrow').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[UpArrow] ';
+});
+
+document.getElementById('down-arrow').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[DownArrow] ';
+});
+
+document.getElementById('left-arrow').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[LeftArrow] ';
+});
+
+document.getElementById('right-arrow').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[RightArrow] ';
+});
+
+document.getElementById('f1-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F1] ';
+});
+
+document.getElementById('f2-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F2] ';
+});
+
+document.getElementById('f3-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F3] ';
+});
+
+document.getElementById('f4-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F4] ';
+});
+
+document.getElementById('f5-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F5] ';
+});
+
+document.getElementById('f6-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F6] ';
+});
+
+document.getElementById('f7-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F7] ';
+});
+
+document.getElementById('f8-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F8] ';
+});
+
+document.getElementById('f9-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F9] ';
+});
+
+document.getElementById('f10-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F10] ';
+});
+
+document.getElementById('f11-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F11] ';
+});
+
+document.getElementById('f12-key').addEventListener('click', function() {
+    const textarea = document.getElementById('create-script-content');
+    textarea.value += '[F12] ';
+});
+
+function loadFiles(directory) {
+    fetch(`/hid/files?directory=${encodeURIComponent(directory)}`)
+    .then(response => response.json())
+    .then(data => {
+        const selector = document.getElementById('file-selector');
+        selector.innerHTML = data.files.map(file => `<option value="${file}">${file}</option>`).join('');
+    })
+    .catch(error => {
+        console.error('Error loading files:', error);
+    });
+}
+
+function loadUSBDevices() {
+    fetch('/hid/usb_devices')
+    .then(response => response.json())
+    .then(data => {
+        const selector = document.getElementById('usb-device-selector');
+        selector.innerHTML = data.devices.map(device => 
+            `<option value="${device.device_path}">
+                ${device.device_name} [${device.vendor_id}:${device.product_id}] (${device.device_path})
+            </option>`).join('');
+    })
+    .catch(error => {
+        console.error('Error loading USB devices:', error);
+    });
+}
+
+function loadScripts() {
+    fetch('/hid/list_scripts')
+    .then(response => response.json())
+    .then(data => {
+        const selector = document.getElementById('script-selector');
+        selector.innerHTML = data.scripts.map(script => `<option value="${script}">${script}</option>`).join('');
+    })
+    .catch(error => {
+        console.error('Error loading scripts:', error);
+    });
+}
+
+function updateStatus() {
+    fetch('/hid/status')
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            document.getElementById('hid-status').textContent = data.status;
+        } else if (data.error) {
+            document.getElementById('hid-status').textContent = data.error;
+        }
+    })
+    .catch(error => {
+        document.getElementById('hid-status').textContent = 'Failed to fetch HID status';
+        console.error('Error fetching HID status:', error);
+    });
+}
+
+document.getElementById('script-selector').addEventListener('change', function() {
+    const scriptName = this.value;
+    fetch(`/hid/load_script?script_name=${encodeURIComponent(scriptName)}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.script_content) {
+            document.getElementById('keyboard-script').value = data.script_content;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading script:', error);
+    });
+});
+
+function switchToKeyboardMode() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'keyboard' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Switched to Keyboard Mode');
+        } else {
+            showMessage('Failed to switch to Keyboard Mode');
+        }
+    })
+    .catch(error => {
+        showMessage('Error switching to Keyboard Mode: ' + error.message);
+    });
+}
+
+function switchToStorageMode() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'storage' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Switched to Storage Mode');
+        } else {
+            showMessage('Failed to switch to Storage Mode');
+        }
+    })
+    .catch(error => {
+        showMessage('Error switching to Storage Mode: ' + error.message);
+    });
+}
+
+function switchToNormalMode() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'normal' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Switched to Normal Mode');
+        } else {
+            showMessage('Failed to switch to Normal Mode');
+        }
+    })
+    .catch(error => {
+        showMessage('Error switching to Normal Mode: ' + error.message);
+    });
+}
+
+function saveKeyboardScript() {
+    const scriptContent = document.getElementById('keyboard-script').value;
+    fetch('/hid/save_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_content: scriptContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Script saved successfully');
+        } else {
+            showMessage('Failed to save script');
+        }
+    })
+    .catch(error => {
+        showMessage('Error saving script: ' + error.message);
+    });
+}
+
+function runKeyboardScript() {
+    const scriptContent = document.getElementById('keyboard-script').value;
+    fetch('/hid/run_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_content: scriptContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Script running');
+        } else {
+            showMessage('Failed to run script');
+        }
+    })
+    .catch(error => {
+        showMessage('Error running script: ' + error.message);
+    });
+}
+
+function clearKeyboardScript() {
+    document.getElementById('keyboard-script').value = '';
+}
+
+function createScript() {
+    const scriptContent = document.getElementById('create-script-content').value;
+    fetch('/hid/create_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_content: scriptContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Script created successfully');
+        } else {
+            showMessage('Failed to create script');
+        }
+    })
+    .catch(error => {
+        showMessage('Error creating script: ' + error.message);
+    });
+}
+
+function disableKeyboardMode() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'off' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Keyboard mode disabled');
+        } else {
+            showMessage('Failed to disable keyboard mode');
+        }
+    })
+    .catch(error => {
+        showMessage('Error disabling keyboard mode: ' + error.message);
+    });
+}
+
+function refreshFileExplorer() {
+    const directory = document.getElementById('file-selector').value;
+    loadFiles(directory);
+}
+
+function disableStorageMode() {
+    fetch('/hid/switch_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'off' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Storage mode disabled');
+        } else {
+            showMessage('Failed to disable storage mode');
+        }
+    })
+    .catch(error => {
+        showMessage('Error disabling storage mode: ' + error.message);
+    });
+}
+
+function convertScript() {
+    const scriptContent = document.getElementById('create-script-content').value;
+    fetch('/hid/convert_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_content: scriptContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.converted_script) {
+            document.getElementById('preview-script').textContent = data.converted_script;
+            document.getElementById('preview-script').classList.remove('hidden');
+        } else {
+            showMessage('Failed to convert script');
+        }
+    })
+    .catch(error => {
+        showMessage('Error converting script: ' + error.message);
+    });
+}
+
+function clearScript() {
+    document.getElementById('create-script-content').value = '';
+    document.getElementById('preview-script').textContent = '';
+    document.getElementById('preview-script').classList.add('hidden');
+}
+
+function saveScript() {
+    const scriptContent = document.getElementById('create-script-content').value;
+    fetch('/hid/save_script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_content: scriptContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Script saved successfully');
+        } else {
+            showMessage('Failed to save script');
+        }
+    })
+    .catch(error => {
+        showMessage('Error saving script: ' + error.message);
+    });
+}
+</script>
+
+<style>
+.hidden {
+    display: none;
+}
+
+.console-output {
+    background-color: black;
+    color: green;
+    padding: 10px;
+    height: 200px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+}
+</style>
+{% endblock %}

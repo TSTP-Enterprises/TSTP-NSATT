@@ -1,0 +1,37 @@
+{% extends "iframe_template.html" %}
+{% block title %}Previous Network Findings{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Previous Network Findings</h2>
+    
+    <table class="table-container">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>IP Address</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for finding in findings %}
+            <tr>
+                <td>{{ finding[1] }}</td>
+                <td>{{ finding[2] }}</td>
+                <td>
+                    <form action="/finding/{{ finding[0] }}" method="get" style="display: inline;">
+                        <button type="submit" class="button blue">View</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="button-group">
+        <button class="button blue" onclick="window.location.href='/'">Go back</button>
+        <form action="{{ url_for('clear_findings') }}" method="post" style="display: inline;">
+            <button class="button red" type="submit">Clear Findings</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

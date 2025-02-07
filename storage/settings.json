@@ -1,0 +1,8 @@
+{
+    "theme": "dracula",
+    "list_view": true,
+    "plugins_enabled": {
+        "network_info.py": false,
+        "local_ports.py": false
+    }
+}

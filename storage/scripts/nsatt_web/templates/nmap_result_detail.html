@@ -1,0 +1,12 @@
+{% extends "iframe_template.html" %}
+{% block title %}Nmap Result Details{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Nmap Result Details for {{ result[3] }}</h2>
+    <pre>{{ result[5] }}</pre>
+    <div class="button-group">
+        <a class="button blue" href='/nmap/results'>Back to Results</a>
+        <a class="button blue" style="display: none;" href='/'>Go back</a>
+    </div>
+</div>
+{% endblock %}

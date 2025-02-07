@@ -1,0 +1,155 @@
+/* Base Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+}
+
+nav a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: var(--link-color);
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    padding: 20px 0;
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+}
+
+h1, h2 {
+    color: var(--header-color);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+}
+
+input[type="submit"],
+.button {
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover,
+.button:hover {
+    background-color: var(--button-hover-bg-color);
+}
+
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.alert.success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.alert.warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.alert.danger {
+    background-color: #f44336;
+    color: white;
+}
+
+.alert.info {
+    background-color: #2196F3;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+table, th, td {
+    border: 1px solid var(--border-color);
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+.log-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Light Mode Variables */
+:root {
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --link-color: #1a0dab;
+    --header-color: #333333;
+    --border-color: #dddddd;
+    --input-border-color: #cccccc;
+    --input-bg-color: #f9f9f9;
+    --button-bg-color: #4CAF50;
+    --button-text-color: #ffffff;
+    --button-hover-bg-color: #45a049;
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --link-color: #8ab4f8;
+    --header-color: #ffffff;
+    --border-color: #333333;
+    --input-border-color: #555555;
+    --input-bg-color: #1e1e1e;
+    --button-bg-color: #bb86fc;
+    --button-text-color: #000000;
+    --button-hover-bg-color: #9a67ea;
+}

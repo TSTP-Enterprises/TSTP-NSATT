@@ -1,0 +1,46 @@
+{% extends "iframe_template.html" %}
+{% block title %}Search Results{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Search Results for "{{ search_term }}"</h2>
+    <table class="table-container">
+        <thead>
+            <tr>
+                <th>Module Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in search_results %}
+            <tr>
+                <td>{{ result.module }}</td>
+                <td>{{ result.description }}</td>
+                <td>
+                    <a class="button blue" href="{{ url_for('metasploit.run_module', module_name=result.module) }}">Run</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="console-output" class="console-output"></div>
+</div>
+
+<script>
+function fetchConsoleOutput() {
+    fetch("{{ url_for('metasploit.console_output') }}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.console_output) {
+                const consoleOutput = document.getElementById('console-output');
+                consoleOutput.textContent = data.console_output;
+            }
+        })
+        .catch(error => console.error('Error fetching console output:', error));
+}
+
+// Poll every 5 seconds
+setInterval(fetchConsoleOutput, 5000);
+</script>
+
+{% endblock %}

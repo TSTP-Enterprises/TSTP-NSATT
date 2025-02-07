@@ -1,0 +1,59 @@
+{% extends "iframe_template.html" %}
+{% block title %}Network Finding Details{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Network Finding Details</h2>
+
+    <div class="section-container">
+        <h3 class="section-title">LAN Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">Time:</td><td class="value-cell">{{ details[1] }}</td></tr>
+            <tr><td class="label-cell">LAN IP:</td><td class="value-cell">{{ details[2] }}</td></tr>
+            <tr><td class="label-cell">MAC Address:</td><td class="value-cell">{{ details[3] }}</td></tr>
+            <tr><td class="label-cell">Gateway:</td><td class="value-cell">{{ details[4] }}</td></tr>
+            <tr><td class="label-cell">Hostname:</td><td class="value-cell">{{ details[5] }}</td></tr>
+            <tr><td class="label-cell">Switch Info:</td><td class="value-cell"><pre>{{ details[6] }}</pre></td></tr>
+            <tr><td class="label-cell">DNS Servers:</td><td class="value-cell">{{ details[15] }}</td></tr>
+            <tr><td class="label-cell">Subnet Mask:</td><td class="value-cell">{{ details[16] }}</td></tr>
+            <tr><td class="label-cell">Broadcast IP:</td><td class="value-cell">{{ details[17] }}</td></tr>
+            <tr><td class="label-cell">Interface Names:</td><td class="value-cell">{{ details[21] | safe }}</td></tr>
+            <tr><td class="label-cell">Default Gateway:</td><td class="value-cell">{{ details[22] }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">WAN Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">ISP:</td><td class="value-cell">{{ details[9] }}</td></tr>
+            <tr><td class="label-cell">Organization:</td><td class="value-cell">{{ details[18] }}</td></tr>
+            <tr><td class="label-cell">WAN IP:</td><td class="value-cell">{{ details[7] }}</td></tr>
+            <tr><td class="label-cell">WAN Gateway:</td><td class="value-cell">{{ details[8] }}</td></tr>
+            <tr><td class="label-cell">Region:</td><td class="value-cell">{{ details[10] }}</td></tr>
+            <tr><td class="label-cell">City:</td><td class="value-cell">{{ details[11] }}</td></tr>
+            <tr><td class="label-cell">Country:</td><td class="value-cell">{{ details[12] }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">Request Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">Requesting IP:</td><td class="value-cell">{{ details[13] }}</td></tr>
+            <tr><td class="label-cell">Browser:</td><td class="value-cell">{{ details[14] }}</td></tr>
+            <tr><td class="label-cell">Referrer:</td><td class="value-cell">{{ details[19] }}</td></tr>
+            <tr><td class="label-cell">User Agent Platform:</td><td class="value-cell">{{ details[20] }}</td></tr>
+            <tr><td class="label-cell">User Agent Version:</td><td class="value-cell">{{ details[21] }}</td></tr>
+            <tr><td class="label-cell">User Agent Language:</td><td class="value-cell">{{ details[22] }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">Routing Table</h3>
+        <pre>{{ details[23] }}</pre>
+    </div>
+
+    <div class="button-group">
+        <button class="button blue" onclick="window.location.href='/findings'">Back to Findings</button>
+        <button class="button blue" onclick="window.location.href='/'">Go back</button>
+    </div>
+</div>
+{% endblock %}

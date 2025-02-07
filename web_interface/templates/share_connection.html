@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="share-connection">
+    <h2>Share Network Connection</h2>
+    <form action="{{ url_for('share_connection_route') }}" method="POST">
+        <div class="form-group">
+            <label for="source_iface">Source Interface:</label>
+            <select id="source_iface" name="source_iface" required>
+                {% for iface in interfaces %}
+                <option value="{{ iface }}">{{ iface }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="target_iface">Target Interface:</label>
+            <select id="target_iface" name="target_iface" required>
+                {% for iface in interfaces %}
+                <option value="{{ iface }}">{{ iface }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input type="submit" value="Share Connection">
+    </form>
+</section>
+{% endblock %}

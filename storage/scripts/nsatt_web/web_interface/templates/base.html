@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Network Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Network Manager</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('view_logs') }}">Logs</a>
+                {% if network_manager_autostart %}
+                <a href="{{ url_for('manual_connect') }}">Manual Connect</a>
+                {% endif %}
+                <a href="{{ url_for('show_share_connection_route') }}">Share Connection</a>
+            </nav>
+        </header>
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert {{ category }}">
+                      {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+        <footer>
+            <p>&copy; 2024 NSATT Network Manager</p>
+            <button id="toggleTheme">Toggle Dark/Light Mode</button>
+        </footer>
+    </div>
+</body>
+</html>

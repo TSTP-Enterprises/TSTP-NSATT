@@ -1,0 +1,115 @@
+{% extends "iframe_template.html" %}
+{% block title %}Network Information{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Network Information</h2>
+
+    <div class="section-container">
+        <h3 class="section-title">LAN Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">Time:</td><td class="value-cell">{{ network_info.time }}</td></tr>
+            <tr><td class="label-cell">LAN IP:</td><td class="value-cell">{{ network_info.lan_ip }}</td></tr>
+            <tr><td class="label-cell">MAC Address:</td><td class="value-cell">{{ network_info.mac }}</td></tr>
+            <tr><td class="label-cell">Gateway:</td><td class="value-cell">{{ network_info.gateway }}</td></tr>
+            <tr><td class="label-cell">Hostname:</td><td class="value-cell">{{ network_info.hostname }}</td></tr>
+            <tr>
+                <td class="label-cell">Switch Info:</td>
+                <td class="value-cell">
+                    <div class="switch-info-container" style="overflow: auto;">
+                        <pre class="switch-info-pre" style="white-space: pre-wrap;">{{ network_info.switch_info }}</pre>
+                        <button class="toggle-switch-info">Show/Hide Switch Info</button>
+                    </div>
+                    <div class="switch-port-controls">
+                        <button class="button" onclick="changeSwitchPortLight('on')">Turn Port Light On</button>
+                        <button class="button" onclick="changeSwitchPortLight('off')">Turn Port Light Off</button>
+                        <button class="button" onclick="changeSwitchPortLight('blink')">Blink Port Light</button>
+                    </div>
+                </td>
+            </tr>
+            <tr><td class="label-cell">DNS Servers:</td><td class="value-cell">{{ network_info.dns_servers }}</td></tr>
+            <tr><td class="label-cell">Subnet Mask:</td><td class="value-cell">{{ network_info.subnet_mask }}</td></tr>
+            <tr><td class="label-cell">Broadcast IP:</td><td class="value-cell">{{ network_info.broadcast_ip }}</td></tr>
+            <tr><td class="label-cell">Interface Names:</td><td class="value-cell">{{ network_info.interface_names | safe }}</td></tr>
+            <tr><td class="label-cell">Default Gateway:</td><td class="value-cell">{{ network_info.default_gateway }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">WAN Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">ISP:</td><td class="value-cell">{{ network_info.isp }}</td></tr>
+            <tr><td class="label-cell">Organization:</td><td class="value-cell">{{ network_info.org }}</td></tr>
+            <tr><td class="label-cell">WAN IP:</td><td class="value-cell">{{ network_info.wan_ip }}</td></tr>
+            <tr><td class="label-cell">WAN Gateway:</td><td class="value-cell">{{ network_info.wan_gateway }}</td></tr>
+            <tr><td class="label-cell">Region:</td><td class="value-cell">{{ network_info.region }}</td></tr>
+            <tr><td class="label-cell">City:</td><td class="value-cell">{{ network_info.city }}</td></tr>
+            <tr><td class="label-cell">Country:</td><td class="value-cell">{{ network_info.country }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">Request Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">Requesting IP:</td><td class="value-cell">{{ network_info.requesting_ip }}</td></tr>
+            <tr><td class="label-cell">Browser:</td><td class="value-cell">{{ network_info.browser }}</td></tr>
+            <tr><td class="label-cell">Referrer:</td><td class="value-cell">{{ network_info.referer }}</td></tr>
+            <tr><td class="label-cell">User Agent Platform:</td><td class="value-cell">{{ network_info.user_agent_platform }}</td></tr>
+            <tr><td class="label-cell">User Agent Version:</td><td class="value-cell">{{ network_info.user_agent_version }}</td></tr>
+            <tr><td class="label-cell">User Agent Language:</td><td class="value-cell">{{ network_info.user_agent_language }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">Routing Table</h3>
+        <pre>{{ network_info.routing_table }}</pre>
+    </div>
+
+    <div class="button-group">
+        <form action="{{ url_for('download_info') }}" method="get" style="display: inline;">
+            <button type="submit" class="button">Download Info</button>
+        </form>
+        <form action="/nmap" method="get" style="display: inline;">
+            <button type="submit" class="button green">Run Nmap Scan</button>
+        </form>
+        <form action="/wireless" method="get" style="display: inline;">
+            <button type="submit" class="button blue">Wireless Scans</button>
+        </form>
+        <form action="{{ url_for('clear_findings') }}" method="post" style="display: inline;">
+            <button type="submit" class="button red">Clear All Findings</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const switchInfoPre = document.querySelector('.switch-info-pre');
+        const toggleButton = document.querySelector('.toggle-switch-info');
+
+        if (toggleButton) {
+            toggleButton.addEventListener('click', function() {
+                switchInfoPre.classList.toggle('collapsed');
+            });
+        }
+    });
+
+    function changeSwitchPortLight(action) {
+        fetch(`/change_switch_port_light/${action}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ port: 'GigabitEthernet1/0/1' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while changing the switch port light.');
+        });
+    }
+</script>
+{% endblock %}

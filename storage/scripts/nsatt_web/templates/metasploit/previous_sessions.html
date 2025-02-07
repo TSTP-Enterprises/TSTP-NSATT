@@ -1,0 +1,43 @@
+{% extends "iframe_template.html" %}
+{% block title %}Previous Metasploit Sessions{% endblock %}
+{% block content %}
+<h2>Previous Metasploit Sessions</h2>
+<table class="table-container">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for session in sessions %}
+        <tr>
+            <td>{{ session.id }}</td>
+            <td>{{ session.start_time }}</td>
+            <td>{{ session.end_time }}</td>
+            <td>
+                <button class="button info" onclick="viewSessionOutput({{ session.id }})">View Output</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function viewSessionOutput(sessionId) {
+    fetch(`/metasploit/get_session_output/${sessionId}`, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            const output = data.console_output || 'No output available.';
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(`<pre>${output}</pre>`);
+        })
+        .catch(error => {
+            console.error('Error fetching session output:', error);
+            alert('Error fetching session output.');
+        });
+}
+</script>
+{% endblock %}

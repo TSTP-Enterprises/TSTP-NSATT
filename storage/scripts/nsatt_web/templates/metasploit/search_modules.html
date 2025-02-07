@@ -1,0 +1,13 @@
+{% extends "iframe_template.html" %}
+{% block title %}Search Metasploit Modules{% endblock %}
+{% block content %}
+<div class="form-container centered">
+    <h2>Search Metasploit Modules</h2>
+    <form method="post" action="{{ url_for('metasploit.search_modules') }}">
+        <input type="text" name="search_term" placeholder="Enter search term" required>
+        <div class="button-group">
+            <button type="submit" class="button green">Search</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Network Information{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Network Information</h2>
+
+    <div class="section-container">
+        <h3 class="section-title">LAN Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">Time:</td><td class="value-cell">{{ network_info.time }}</td></tr>
+            <tr><td class="label-cell">LAN IP:</td><td class="value-cell">{{ network_info.lan_ip }}</td></tr>
+            <tr><td class="label-cell">MAC:</td><td class="value-cell">{{ network_info.mac }}</td></tr>
+            <tr><td class="label-cell">Gateway:</td><td class="value-cell">{{ network_info.gateway }}</td></tr>
+            <tr><td class="label-cell">Hostname:</td><td class="value-cell">{{ network_info.hostname }}</td></tr>
+            <tr><td class="label-cell">Switch Info:</td><td class="value-cell">{{ network_info.switch_info }}</td></tr>
+            <tr><td class="label-cell">DNS Servers:</td><td class="value-cell">{{ network_info.dns_servers }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">WAN Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">ISP:</td><td class="value-cell">{{ network_info.isp }}</td></tr>
+            <tr><td class="label-cell">Organization:</td><td class="value-cell">{{ network_info.org }}</td></tr>
+            <tr><td class="label-cell">WAN IP:</td><td class="value-cell">{{ network_info.wan_ip }}</td></tr>
+            <tr><td class="label-cell">WAN Gateway:</td><td class="value-cell">{{ network_info.wan_gateway }}</td></tr>
+            <tr><td class="label-cell">Region:</td><td class="value-cell">{{ network_info.region }}</td></tr>
+            <tr><td class="label-cell">City:</td><td class="value-cell">{{ network_info.city }}</td></tr>
+            <tr><td class="label-cell">Country:</td><td class="value-cell">{{ network_info.country }}</td></tr>
+        </table>
+    </div>
+
+    <div class="section-container">
+        <h3 class="section-title">Request Information</h3>
+        <table class="table-container">
+            <tr><td class="label-cell">Requesting IP:</td><td class="value-cell">{{ network_info.requesting_ip }}</td></tr>
+            <tr><td class="label-cell">Browser:</td><td class="value-cell">{{ network_info.browser }}</td></tr>
+        </table>
+    </div>
+
+    <div class="button-group">
+        <form action="{{ url_for('download_info') }}" method="get" style="display: inline;">
+            <button type="submit" class="button">Download Info</button>
+        </form>
+        <form action="/nmap" method="get" style="display: inline;">
+            <button type="submit" class="button green">Run Nmap Scan</button>
+        </form>
+        <form action="/wireless" method="get" style="display: inline;">
+            <button type="submit" class="button blue">Wireless Scans</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

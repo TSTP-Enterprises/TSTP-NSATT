@@ -1,0 +1,158 @@
+{% extends "iframe_template.html" %}
+{% block title %}Run Wireless Scan{% endblock %}
+{% block content %}
+<div class="info-container">
+    <h2>Run Wireless Scan</h2>
+    <form method="POST" action="{{ url_for('wireless_scan') }}">
+        <div class="section-container">
+            <label for="interface">Select Interface:</label>
+            <select id="interface" name="target">
+                {% for interface in interfaces %}
+                    <option value="{{ interface }}">{{ interface }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="scan_type">Select Scan Type:</label>
+            <select id="scan_type" name="scan_type" onchange="updateScanTypeOptions()">
+                {% for scan_key, scan_desc in scan_types.items() %}
+                    <option value="{{ scan_key }}">{{ scan_desc }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <label>Basic Options:</label>
+            <div>
+                <input type="checkbox" name="options" value="--showack">
+                <label>Show ACK/CTS/RTS statistics</label><br><br>
+                <input type="checkbox" name="options" value="--ignore-negative-one">
+                <label>Ignore negative one channel</label>
+            </div>
+        </div>
+
+        <div class="section-container advanced-options" id="advanced-options">
+            <h3 class="section-title">Advanced Options</h3>
+
+            <div>
+                <input type="checkbox" id="use_band" name="use_band" onclick="toggleInputState(this, 'band')">
+                <label for="band">Specify Band:</label>
+                <select id="band" name="band" disabled>
+                    <option value="a">5 GHz</option>
+                    <option value="b">2.4 GHz</option>
+                </select>
+            </div>
+
+            <div>
+                <input type="checkbox" id="use_channel" name="use_channel" onclick="toggleInputState(this, 'channel')">
+                <label for="channel">Specify Channel:</label>
+                <select id="channel" name="channel" disabled>
+                    <optgroup label="2.4 GHz Channels">
+                        <option value="1">1</option>
+                        <option value="6">6</option>
+                        <option value="11">11</option>
+                    </optgroup>
+                    <optgroup label="5 GHz Channels">
+                        <option value="36">36</option>
+                        <option value="40">40</option>
+                        <option value="44">44</option>
+                        <option value="48">48</option>
+                        <option value="149">149</option>
+                        <option value="153">153</option>
+                        <option value="157">157</option>
+                        <option value="161">161</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div>
+                <input type="checkbox" id="use_bssid" name="use_bssid" onclick="toggleInputState(this, 'bssid')">
+                <label for="bssid">Target MAC Address (BSSID):</label>
+                <input type="text" id="bssid" name="bssid" placeholder="e.g., 00:11:22:33:44:55" disabled>
+            </div>
+
+            <div>
+                <input type="checkbox" id="use_essid" name="use_essid" onclick="toggleInputState(this, 'essid')">
+                <label for="essid">Target ESSID:</label>
+                <input type="text" id="essid" name="essid" placeholder="e.g., MyNetwork" disabled>
+            </div>
+
+            <div>
+                <input type="checkbox" id="use_deauth" name="use_deauth" onclick="toggleInputState(this, 'deauth')">
+                <label for="deauth">Deauthentication Attack:</label>
+                <select id="deauth" name="deauth" disabled>
+                    <option value="0">Deauth All Clients</option>
+                    <option value="1">Deauth Specific Client</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="custom_command">Custom Command:</label>
+                <input type="text" id="custom_command" name="custom_command" placeholder="e.g., --write outputfile">
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="button green">Start Scan</button>
+            <button type="button" class="button blue" id="toggle-advanced" onclick="toggleAdvancedOptions()">Show Advanced</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleAdvancedOptions() {
+        const advancedOptions = document.getElementById("advanced-options");
+        advancedOptions.classList.toggle("show-advanced-options");
+        const toggleButton = document.getElementById("toggle-advanced");
+        if (advancedOptions.classList.contains("show-advanced-options")) {
+            toggleButton.textContent = "Hide Advanced";
+        } else {
+            toggleButton.textContent = "Show Advanced";
+        }
+    }
+
+    function toggleInputState(checkbox, inputId) {
+        const input = document.getElementById(inputId);
+        input.disabled = !checkbox.checked;
+    }
+
+    function updateScanTypeOptions() {
+        const scanTypeSelect = document.getElementById('scan_type');
+        const selectedScanType = scanTypeSelect.value;
+
+        const bandCheckbox = document.getElementById('use_band');
+        const channelCheckbox = document.getElementById('use_channel');
+        const bssidCheckbox = document.getElementById('use_bssid');
+        const essidCheckbox = document.getElementById('use_essid');
+        const deauthCheckbox = document.getElementById('use_deauth');
+
+        if (selectedScanType === 'airodump-ng') {
+            bandCheckbox.disabled = false;
+            channelCheckbox.disabled = false;
+            bssidCheckbox.disabled = false;
+            essidCheckbox.disabled = false;
+            deauthCheckbox.disabled = true;
+        } else if (selectedScanType === 'wash') {
+            bandCheckbox.disabled = true;
+            channelCheckbox.disabled = true;
+            bssidCheckbox.disabled = false;
+            essidCheckbox.disabled = true;
+            deauthCheckbox.disabled = true;
+        } else if (selectedScanType === 'wifite') {
+            bandCheckbox.disabled = false;
+            channelCheckbox.disabled = true;
+            bssidCheckbox.disabled = true;
+            essidCheckbox.disabled = true;
+            deauthCheckbox.disabled = false;
+        } else {
+            bandCheckbox.disabled = true;
+            channelCheckbox.disabled = true;
+            bssidCheckbox.disabled = true;
+            essidCheckbox.disabled = true;
+            deauthCheckbox.disabled = true;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const scanTypeSelect = document.getElementById('scan_type');
+        updateScanTypeOptions();
+    });
+</script>
+{% endblock %}

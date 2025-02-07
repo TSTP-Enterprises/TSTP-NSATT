@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TSTP NSATT{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* ======================== CSS Variables ========================= */
+
+        :root {
+            /* Default Light Theme Variables */
+            --primary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --taskbar-color: #34495e;
+            --taskbar-button-color: #2c3e50;
+            --taskbar-button-hover-color: #1abc9c;
+            --window-background: white;
+            --window-border-color: #7f8c8d;
+            --window-header-color: #2980b9;
+            --window-header-text-color: white;
+            --icon-background: #bdc3c7;
+            --icon-hover-color: #95a5a6;
+            --context-menu-background: #ffffff;
+            --context-menu-border: #ccc;
+            --context-menu-text-color: #2c3e50;
+            /* Add more variables as needed */
+        }
+
+        /* Dark Theme */
+        .dark-theme {
+            --primary-color: #1a1a1a;
+            --background-color: #121212;
+            --taskbar-color: #2c3e50; /* Lighter taskbar for better contrast */
+            --taskbar-button-color: #333333;
+            --taskbar-button-hover-color: #555555;
+            --window-background: #2c2c2c;
+            --window-border-color: #444444;
+            --window-header-color: #3b3b3b;
+            --window-header-text-color: #f1f1f1;
+            --icon-background: #555555;
+            --icon-hover-color: #777777;
+            --context-menu-background: #2c2c2c;
+            --context-menu-border: #555555;
+            --context-menu-text-color: #f1f1f1;
+            /* Add more variables as needed */
+        }
+
+        /* Blue Nebula Theme (3D Effects) */
+        .blue-nebula-theme {
+            --primary-color: #1e3c72;
+            --background-color: #2a5298;
+            --taskbar-color: #1e3c72;
+            --taskbar-button-color: #2a5298;
+            --taskbar-button-hover-color: #4facfe;
+            --window-background: #3a7bd5;
+            --window-border-color: #1e3c72;
+            --window-header-color: #1e3c72;
+            --window-header-text-color: white;
+            --icon-background: #4facfe;
+            --icon-hover-color: #81d4fa;
+            --context-menu-background: #3a7bd5;
+            --context-menu-border: #1e3c72;
+            --context-menu-text-color: #ffffff;
+            /* Add more variables as needed */
+            /* 3D Effect */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.5s ease;
+        }
+
+        /* Sunset Boulevard Theme (Gradient and Animation) */
+        .sunset-boulevard-theme {
+            --primary-color: #ff7e5f;
+            --background-color: #feb47b;
+            --taskbar-color: #ff7e5f;
+            --taskbar-button-color: #feb47b;
+            --taskbar-button-hover-color: #ffca3a;
+            --window-background: #ffb88c;
+            --window-border-color: #ff7e5f;
+            --window-header-color: #ff7e5f;
+            --window-header-text-color: white;
+            --icon-background: #ffca3a;
+            --icon-hover-color: #ffc75f;
+            --context-menu-background: #ffb88c;
+            --context-menu-border: #ff7e5f;
+            --context-menu-text-color: #ffffff;
+            /* Gradient Background */
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            transition: background 1s ease;
+        }
+
+        /* Cyberpunk Theme (Neon and Flicker Animation) */
+        .cyberpunk-theme {
+            --primary-color: #ff00ff;
+            --background-color: #0f0f0f;
+            --taskbar-color: #1a1a1a;
+            --taskbar-button-color: #ff00ff;
+            --taskbar-button-hover-color: #00ffff;
+            --window-background: #2d2d2d;
+            --window-border-color: #ff00ff;
+            --window-header-color: #1a1a1a;
+            --window-header-text-color: #00ffff;
+            --icon-background: #ff00ff;
+            --icon-hover-color: #00ffff;
+            --context-menu-background: #2d2d2d;
+            --context-menu-border: #ff00ff;
+            --context-menu-text-color: #ffffff;
+            /* Neon Glow Effect */
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
+            animation: flicker 3s infinite;
+            transition: box-shadow 0.3s ease;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Aurora Borealis Theme (Animated Gradient) */
+        .aurora-theme {
+            --primary-color: #00f260;
+            --background-color: #0575e6;
+            --taskbar-color: #00f260;
+            --taskbar-button-color: #0575e6;
+            --taskbar-button-hover-color: #00c3ff;
+            --window-background: #6dd5ed;
+            --window-border-color: #0575e6;
+            --window-header-color: #00f260;
+            --window-header-text-color: white;
+            --icon-background: #00c3ff;
+            --icon-hover-color: #6dd5ed;
+            --context-menu-background: #6dd5ed;
+            --context-menu-border: #0575e6;
+            --context-menu-text-color: #ffffff;
+            /* Animated Gradient */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Minimalist Theme (Plain Colors) */
+        .minimalist-theme {
+            --primary-color: #ffffff;
+            --background-color: #f0f0f0;
+            --taskbar-color: #cccccc;
+            --taskbar-button-color: #ffffff;
+            --taskbar-button-hover-color: #dddddd;
+            --window-background: #ffffff;
+            --window-border-color: #cccccc;
+            --window-header-color: #cccccc;
+            --window-header-text-color: #333333;
+            --icon-background: #ffffff;
+            --icon-hover-color: #dddddd;
+            --context-menu-background: #ffffff;
+            --context-menu-border: #cccccc;
+            --context-menu-text-color: #333333;
+            /* Simple and Clean */
+            transition: all 0.3s ease;
+        }
+
+        /* Neon Lights Theme (Bright Colors and Shadows) */
+        .neon-lights-theme {
+            --primary-color: #39ff14;
+            --background-color: #0f0f0f;
+            --taskbar-color: #1a1a1a;
+            --taskbar-button-color: #39ff14;
+            --taskbar-button-hover-color: #00ffff;
+            --window-background: #2d2d2d;
+            --window-border-color: #39ff14;
+            --window-header-color: #1a1a1a;
+            --window-header-text-color: #00ffff;
+            --icon-background: #39ff14;
+            --icon-hover-color: #00ffff;
+            --context-menu-background: #2d2d2d;
+            --context-menu-border: #39ff14;
+            --context-menu-text-color: #ffffff;
+            /* Bright Neon Glow */
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.7);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Galaxy Theme (Starry Background) */
+        .galaxy-theme {
+            --primary-color: #5d3fd3;
+            --background-color: #1b2735;
+            --taskbar-color: #0f1e3d;
+            --taskbar-button-color: #5d3fd3;
+            --taskbar-button-hover-color: #6a5acd;
+            --window-background: #2c3e50;
+            --window-border-color: #5d3fd3;
+            --window-header-color: #0f1e3d;
+            --window-header-text-color: #ffffff;
+            --icon-background: #6a5acd;
+            --icon-hover-color: #836fff;
+            --context-menu-background: #2c3e50;
+            --context-menu-border: #5d3fd3;
+            --context-menu-text-color: #ffffff;
+            /* Starry Background */
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            background-size: cover;
+            transition: background 1s ease;
+        }
+
+        /* ======================== Base Styles ============================ */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background-color: var(--background-color);
+            color: #2c3e50;
+        }
+
+        /* ======================== Taskbar Styling ====================== */
+
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 40px; /* Reduced height from 50px to 40px */
+            background-color: var(--taskbar-color);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .taskbar-left {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .taskbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .start-button {
+            background-color: var(--taskbar-button-color);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            margin-right: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+
+        .start-button:hover {
+            background-color: var(--taskbar-button-hover-color);
+        }
+
+        .taskbar-buttons {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .taskbar-button {
+            background-color: var(--taskbar-button-color);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            margin-right: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 14px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .taskbar-button:hover {
+            background-color: var(--taskbar-button-hover-color);
+        }
+
+        /* ======================== Start Menu Styling ===================== */
+
+        .start-menu {
+            position: absolute;
+            bottom: 50px; /* Above the taskbar */
+            left: 10px;
+            width: 220px;
+            background-color: var(--context-menu-background);
+            border: 1px solid var(--context-menu-border);
+            border-radius: 5px;
+            display: none;
+            flex-direction: column;
+            z-index: 1500;
+            padding: 10px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .start-menu .menu-item {
+            background-color: var(--window-background);
+            color: var(--context-menu-text-color);
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .start-menu .menu-item:hover {
+            background-color: var(--taskbar-button-hover-color);
+        }
+
+        .start-menu .menu-item .start-menu-icon {
+            margin-right: 10px;
+            font-size: 20px;
+            background-color: var(--icon-background);
+            color: var(--context-menu-text-color);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ======================== Desktop Icons Styling ================= */
+
+        .desktop {
+            position: absolute;
+            top: 0; /* No header */
+            bottom: 40px; /* Space for taskbar */
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px; /* Gap for icons */
+            background-color: var(--background-color);
+            overflow: auto;
+            align-content: flex-start;
+        }
+
+        .desktop-icon {
+            width: 100px;
+            height: 100px;
+            background-color: var(--icon-background);
+            margin: 5px 10px; /* Tighter vertical spacing */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 10px;
+            text-align: center;
+            user-select: none;
+            transition: background-color 0.3s, color 0.3s;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .desktop-icon:hover {
+            background-color: var(--icon-hover-color);
+        }
+
+        .desktop-icon span {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--context-menu-text-color);
+        }
+
+        /* ======================== Start Menu Icon Styling ================= */
+
+        .start-menu-icon {
+            width: 24px;
+            height: 24px;
+            background-color: var(--icon-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            font-size: 18px;
+            color: var(--context-menu-text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ======================== Window Styling ========================= */
+
+        .window {
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            background-color: var(--window-background);
+            border: 1px solid var(--window-border-color);
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            border-radius: 5px;
+            overflow: hidden;
+            resize: both;
+            overflow: auto;
+            max-width: calc(100% - 0px); /* Removed padding consideration */
+            max-height: calc(100% - 0px); /* Removed padding consideration */
+            transition: all 0.3s ease;
+        }
+
+        .window.hidden {
+            display: none;
+        }
+
+        .window-header {
+            background-color: var(--window-header-color);
+            color: var(--window-header-text-color);
+            padding: 8px 12px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 40px;
+        }
+
+        .window-header .title {
+            font-size: 16px;
+            user-select: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .window-header .controls button {
+            background: transparent;
+            border: none;
+            color: var(--window-header-text-color);
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: color 0.3s;
+        }
+
+        .window-header .controls button:hover {
+            color: #e74c3c;
+        }
+
+        .window-content {
+            flex: 1;
+            border-top: 1px solid var(--window-border-color);
+            padding: 10px;
+        }
+
+        .window-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ======================== Context Menu Styling ================== */
+
+        .context-menu {
+            position: absolute;
+            background-color: var(--context-menu-background);
+            border: 1px solid var(--context-menu-border);
+            border-radius: 5px;
+            display: none;
+            flex-direction: column;
+            z-index: 3000;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .context-menu .menu-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: var(--context-menu-text-color);
+        }
+
+        .context-menu .menu-option:hover {
+            background-color: var(--taskbar-button-hover-color);
+        }
+
+        /* ======================== Taskbar Context Menu Styling ======= */
+
+        .taskbar-context-menu {
+            position: absolute;
+            background-color: var(--context-menu-background);
+            border: 1px solid var(--context-menu-border);
+            border-radius: 5px;
+            display: none;
+            flex-direction: column;
+            z-index: 3500;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .taskbar-context-menu .menu-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: var(--context-menu-text-color);
+        }
+
+        .taskbar-context-menu .menu-option:hover {
+            background-color: var(--taskbar-button-hover-color);
+        }
+
+        /* ======================== Mobile Mode Styling ===================== */
+
+        .mobile-mode-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: var(--taskbar-button-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 5000;
+            display: none;
+        }
+
+        .mobile-mode-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            z-index: 4000;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .mobile-mode-overlay.active {
+            display: flex;
+        }
+
+        .mobile-mode-header {
+            background-color: var(--taskbar-color);
+            color: var(--context-menu-text-color);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 4001;
+            height: 50px;
+        }
+
+        .mobile-mode-content {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        .mobile-app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--icon-background);
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0 auto;
+        }
+
+        .mobile-refresh-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--taskbar-button-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 4004;
+        }
+
+        .mobile-refresh-icon:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .mobile-app-icon:active {
+            transform: scale(0.95);
+            background-color: var(--icon-hover-color);
+        }
+
+        .mobile-app-icon div {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .mobile-app-icon span {
+            font-size: 12px;
+            color: var(--context-menu-text-color);
+            word-wrap: break-word;
+            max-width: 100%;
+            padding: 0 5px;
+        }
+
+        .mobile-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--window-background);
+            z-index: 4002;
+            display: none;
+            flex-direction: column;
+        }
+
+        .mobile-window.active {
+            display: flex;
+        }
+
+        .mobile-window-header {
+            background-color: var(--window-header-color);
+            color: var(--window-header-text-color);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 4003;
+            height: 50px;
+        }
+
+        .mobile-window-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        .mobile-window-content iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .mobile-back-button {
+            background-color: var(--taskbar-button-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+        }
+
+        .mobile-back-button:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+
+            .desktop, .taskbar, .start-menu {
+                display: none !important;
+            }
+
+            .mobile-mode-button {
+                display: block;
+            }
+
+            .mobile-mode-overlay.active {
+                display: flex;
+            }
+
+            .mobile-app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .mobile-app-icon {
+                width: 80px;
+                height: 80px;
+            }
+
+            .mobile-app-icon div {
+                font-size: 28px;
+            }
+
+            .mobile-app-icon span {
+                font-size: 11px;
+            }
+        }
+
+        /* ======================== Responsive Design ====================== */
+
+        @media (max-width: 1024px) {
+            .window {
+                width: 80%;
+                height: 80%;
+            }
+        }
+
+        /* ======================== Theme Changer Styling ================= */
+
+        .theme-changer {
+            background-color: var(--taskbar-button-color);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .theme-changer:hover {
+            background-color: var(--taskbar-button-hover-color);
+        }
+
+        /* ======================== Taskbar Item Active Styling ========= */
+
+        .taskbar-button.active {
+            background-color: var(--icon-background);
+            color: var(--context-menu-text-color);
+        }
+
+        /* ======================== Window Resizer Styling =============== */
+
+        .window-resizer {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            cursor: se-resize;
+            background: transparent;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <div class="taskbar-left">
+            <!-- Start Button -->
+            <button class="start-button" id="start-button" onclick="toggleStartMenu()">Start</button>
+
+            <!-- Start Menu -->
+            <div class="start-menu" id="start-menu">
+                <div class="menu-item" data-window="mobile-mode-window" onclick="mobileMode()">
+                    <div class="start-menu-icon">📱</div>
+                    <span>Mobile Mode</span>
+                </div>
+                <div class="menu-item" data-window="fullscreen-window" onclick="fullScreenMode()">
+                    <div class="start-menu-icon">🔎</div>
+                    <span>Fullscreen Mode</span>
+                </div>
+                <div class="menu-item" data-window="index-window">
+                    <div class="start-menu-icon">🌐</div>
+                    <span>Network Info</span>
+                </div>
+                <div class="menu-item" data-window="settings-window">
+                    <div class="start-menu-icon">⚙️</div>
+                    <span>Settings</span>
+                </div>
+                <div class="menu-item" data-window="app_launcher-window">
+                    <div class="start-menu-icon">🚀</div>
+                    <span>App Launcher</span>
+                </div>
+                <div class="menu-item" data-window="hid-window">
+                    <div class="start-menu-icon">🔒</div>
+                    <span>HID Control</span>
+                </div>
+                <div class="menu-item" data-window="console-window">
+                    <div class="start-menu-icon">⌨️</div>
+                    <span>Console</span>
+                </div>
+                <div class="menu-item" data-window="nmap-window">
+                    <div class="start-menu-icon">📡</div>
+                    <span>Nmap Scans</span>
+                </div>
+                <div class="menu-item" data-window="metasploit-window">
+                    <div class="start-menu-icon">🛡️</div>
+                    <span>Metasploit</span>
+                </div>
+                <div class="menu-item" data-window="wireless-window">
+                    <div class="start-menu-icon">📶</div>
+                    <span>Wireless Scans</span>
+                </div>
+                <div class="menu-item" data-window="findings-window">
+                    <div class="start-menu-icon">🗂️</div>
+                    <span>Network DB</span>
+                </div>
+                <div class="menu-item" data-window="live_feed-window">
+                    <div class="start-menu-icon">📺</div>
+                    <span>Live Feed</span>
+                </div>
+                <div class="menu-item" data-window="vnc-window">
+                    <div class="start-menu-icon">🖥️</div>
+                    <span>VNC</span>
+                </div>
+                <div class="menu-item" data-window="file_browser-window">
+                    <div class="start-menu-icon">📁</div>
+                    <span>File Browser</span>
+                </div>
+                <!-- Add more menu items as needed -->
+            </div>
+
+            <!-- Taskbar Buttons -->
+            <div class="taskbar-buttons" id="taskbar-buttons">
+                <!-- Dynamically added taskbar buttons will appear here -->
+            </div>
+        </div>
+        <div class="taskbar-right">
+            <!-- Theme Changer Dropdown -->
+            <select class="theme-changer" id="theme-changer">
+                <option value="light-theme">Light Theme</option>
+                <option value="dark-theme">Dark Theme</option>
+                <option value="blue-nebula-theme">Blue Nebula</option>
+                <option value="sunset-boulevard-theme">Sunset Boulevard</option>
+                <option value="cyberpunk-theme">Cyberpunk</option>
+                <option value="aurora-theme">Aurora Borealis</option>
+                <option value="minimalist-theme">Minimalist</option>
+                <option value="neon-lights-theme">Neon Lights</option>
+                <option value="galaxy-theme">Galaxy</option>
+                <!-- Add more themes as needed -->
+            </select>
+        </div>
+    </div>
+
+    <!-- Desktop Icons -->
+    <div class="desktop">
+        <div class="desktop-icon icon-mobile-mode" data-window="mobile-mode-window" onclick="mobileMode()">
+            <div style="font-size: 40px;">📱</div>
+            <span>Mobile Mode</span>
+        </div>
+        <!-- Fullscreen Mode -->
+        <div class="desktop-icon icon-fullscreen" data-window="fullscreen-window" onclick="fullScreenMode()">
+            <div style="font-size: 40px;">🔎</div>
+            <span>Fullscreen Mode</span>
+        </div>
+        <div class="desktop-icon icon-network-info" data-window="index-window">
+            <div style="font-size: 40px;">🌐</div>
+            <span>Network Info</span>
+        </div>
+        <div class="desktop-icon icon-settings" data-window="settings-window">
+            <div style="font-size: 40px;">⚙️</div>
+            <span>Settings</span>
+        </div>
+        <div class="desktop-icon icon-app-launcher" data-window="app_launcher-window">
+            <div style="font-size: 40px;">🚀</div>
+            <span>App Launcher</span>
+        </div>
+        <div class="desktop-icon icon-hid-control" data-window="hid-window">
+            <div style="font-size: 40px;">🔒</div>
+            <span>HID Control</span>
+        </div>
+        <div class="desktop-icon icon-console" data-window="console-window">
+            <div style="font-size: 40px;">⌨️</div>
+            <span>Console</span>
+        </div>
+        <div class="desktop-icon icon-nmap" data-window="nmap-window">
+            <div style="font-size: 40px;">📡</div>
+            <span>Nmap Scans</span>
+        </div>
+        <div class="desktop-icon icon-metasploit" data-window="metasploit-window">
+            <div style="font-size: 40px;">🛡️</div>
+            <span>Metasploit</span>
+        </div>
+        <div class="desktop-icon icon-wireless" data-window="wireless-window">
+            <div style="font-size: 40px;">📶</div>
+            <span>Wireless Scans</span>
+        </div>
+        <div class="desktop-icon icon-findings" data-window="findings-window">
+            <div style="font-size: 40px;">🗂️</div>
+            <span>Network DB</span>
+        </div>
+        <div class="desktop-icon icon-live-feed" data-window="live_feed-window">
+            <div style="font-size: 40px;">📺</div>
+            <span>Live Feed</span>
+        </div>
+        <div class="desktop-icon icon-vnc" data-window="vnc-window">
+            <div style="font-size: 40px;">🖥️</div>
+            <span>VNC</span>
+        </div>
+        <div class="desktop-icon icon-file-browser" data-window="file_browser-window">
+            <div style="font-size: 40px;">📁</div>
+            <span>File Browser</span>
+        </div>
+        <!-- Add more desktop icons as needed -->
+    </div>
+
+    <!-- Context Menu for Taskbar Items -->
+    <div class="context-menu" id="context-menu">
+        <div class="menu-option" id="close-option">Close</div>
+    </div>
+
+    <!-- Taskbar Context Menu -->
+    <div class="taskbar-context-menu" id="taskbar-context-menu">
+        <div class="menu-option" id="close-taskbar-window">Close Window</div>
+    </div>
+
+    <!-- Mobile Mode Button -->
+    <button class="mobile-mode-button" id="mobile-mode-button">📱 Mobile Mode</button>
+
+    <!-- Mobile Mode Overlay -->
+    <div class="mobile-mode-overlay" id="mobile-mode-overlay">
+        <div class="mobile-mode-header">
+            <span>Mobile View</span>
+            <button class="mobile-back-button" onclick="switchToDesktop()">Desktop View</button>
+        </div>
+        <div class="mobile-mode-content">
+            <!-- Mobile-specific content can be added here -->
+            <h2>Welcome to Mobile Mode</h2>
+            <p>This is a mobile-friendly view of your desktop interface.</p>
+            <!-- You can add more mobile-optimized elements here -->
+        </div>
+    </div>
+
+    <!-- Footer Removed as per requirements -->
+
+    <script>
+        // ======================== Utility Functions =========================
+
+        /**
+         * Applies the selected theme to the document.
+         * @param {string} theme - The theme to apply ('dark-theme', 'light-theme', etc.).
+         */
+
+        function applyTheme(theme) {
+            const themes = [
+                'light-theme', 'dark-theme', 'blue-nebula-theme', 'sunset-boulevard-theme',
+                'cyberpunk-theme', 'aurora-theme', 'minimalist-theme', 'neon-lights-theme',
+                'galaxy-theme'
+            ];
+            document.body.classList.remove(...themes);
+            if (theme) {
+                document.body.classList.add(theme);
+            }
+
+            // Update desktop icons based on theme
+            document.querySelectorAll('.desktop-icon').forEach(icon => {
+                const iconClass = icon.classList[1]; // e.g., 'icon-network-info'
+                const bgColor = getComputedStyle(document.body).getPropertyValue(`--icon-background`).trim();
+                const textColor = getComputedStyle(document.body).getPropertyValue(`--context-menu-text-color`).trim();
+                icon.style.backgroundColor = bgColor;
+                icon.querySelector('span').style.color = textColor;
+            });
+
+            // Update start menu icons based on theme
+            document.querySelectorAll('.start-menu .menu-item .start-menu-icon').forEach(icon => {
+                const bgColor = getComputedStyle(document.body).getPropertyValue(`--icon-background`).trim();
+                const textColor = getComputedStyle(document.body).getPropertyValue(`--context-menu-text-color`).trim();
+                icon.style.backgroundColor = bgColor;
+                icon.style.color = textColor;
+            });
+
+            // Update taskbar buttons to match icon colors
+            document.querySelectorAll('.taskbar-button').forEach(button => {
+                const windowId = button.getAttribute('data-window');
+                const iconElement = document.querySelector(`.desktop-icon[data-window="${windowId}"] div`);
+                if (iconElement) {
+                    const bgColor = window.getComputedStyle(iconElement.parentElement).backgroundColor;
+                    const textColor = window.getComputedStyle(iconElement).color;
+                    button.style.backgroundColor = bgColor;
+                    button.style.color = textColor;
+                }
+            });
+        }
+
+        /**
+         * Retrieves the next highest z-index value.
+         * @returns {number} The next z-index value.
+         */
+        function getNextZIndex() {
+            const windows = document.querySelectorAll('.window');
+            let maxZ = 2000;
+            windows.forEach(win => {
+                const z = parseInt(window.getComputedStyle(win).zIndex) || 2000;
+                if (z > maxZ) {
+                    maxZ = z;
+                }
+            });
+            return maxZ + 1;
+        }
+
+        function fullScreenMode() {
+            let elem = document.documentElement; // The root element
+
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { // Safari
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { // IE11
+                elem.msRequestFullscreen();
+            }
+        }
+
+        function mobileMode() {
+            const mobileModeOverlay = document.getElementById('mobile-mode-overlay');
+            const mobileContent = document.querySelector('.mobile-mode-content');
+            
+            // Clear existing content
+            mobileContent.innerHTML = '';
+            
+            // Create mobile header with Desktop View button
+            const header = document.createElement('div');
+            header.className = 'mobile-mode-header';
+            header.innerHTML = `
+                <span>Mobile View</span>
+                <button class="mobile-back-button" onclick="switchToDesktop()">Desktop View</button>
+            `;
+            mobileModeOverlay.querySelector('.mobile-mode-header').replaceWith(header);
+            
+            // Create mobile app grid
+            const appGrid = document.createElement('div');
+            appGrid.className = 'mobile-app-grid';
+            
+            // Get all desktop icons and create mobile versions
+            document.querySelectorAll('.desktop-icon').forEach(icon => {
+                const windowId = icon.getAttribute('data-window');
+                
+                // Skip mobile mode and fullscreen icons in mobile view
+                if (windowId === 'mobile-mode-window' || windowId === 'fullscreen-window') {
+                    return;
+                }
+                
+                const mobileIcon = document.createElement('div');
+                mobileIcon.className = 'mobile-app-icon';
+                mobileIcon.setAttribute('data-window', windowId);
+                
+                const iconContent = icon.querySelector('div').cloneNode(true);
+                const iconText = icon.querySelector('span').cloneNode(true);
+                
+                mobileIcon.appendChild(iconContent);
+                mobileIcon.appendChild(iconText);
+                
+                // Add click handler
+                mobileIcon.addEventListener('click', function() {
+                    openMobileWindow(
+                        this.getAttribute('data-window'),
+                        this.querySelector('span').textContent,
+                        getWindowSource(this.getAttribute('data-window'))
+                    );
+                });
+                
+                // Add touch handler for mobile devices
+                mobileIcon.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                mobileIcon.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(1)';
+                    openMobileWindow(
+                        this.getAttribute('data-window'),
+                        this.querySelector('span').textContent,
+                        getWindowSource(this.getAttribute('data-window'))
+                    );
+                });
+                
+                appGrid.appendChild(mobileIcon);
+            });
+            
+            mobileContent.appendChild(appGrid);
+            
+            // Add refresh button
+            const refreshButton = document.createElement('div');
+            refreshButton.className = 'mobile-refresh-icon';
+            refreshButton.innerHTML = '🔄';
+            refreshButton.addEventListener('click', function() {
+                this.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    this.style.transform = 'none';
+                    mobileMode(); // Refresh the mobile view
+                }, 500);
+            });
+            mobileContent.appendChild(refreshButton);
+            
+            mobileModeOverlay.classList.add('active');
+            
+            // Force mobile mode if screen width is small
+            if (window.innerWidth <= 768) {
+                document.querySelector('.desktop').style.display = 'none';
+                document.querySelector('.taskbar').style.display = 'none';
+            }
+        }
+
+        function switchToDesktop() {
+            const mobileModeOverlay = document.getElementById('mobile-mode-overlay');
+            mobileModeOverlay.classList.remove('active');
+            
+            // Show desktop and taskbar
+            const desktop = document.querySelector('.desktop');
+            const taskbar = document.querySelector('.taskbar');
+            
+            if (desktop && taskbar) {
+                desktop.style.display = 'flex';
+                taskbar.style.display = 'flex';
+                
+                // Reset any mobile-specific styles
+                document.body.style.overflow = '';
+                
+                // Close any open mobile windows
+                const mobileWindow = document.querySelector('.mobile-window');
+                if (mobileWindow) {
+                    mobileWindow.remove();
+                }
+            }
+        }
+
+        // Update window resize handler
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                mobileMode();
+            } else {
+                // Only switch to desktop if we're currently in mobile mode
+                const mobileModeOverlay = document.getElementById('mobile-mode-overlay');
+                if (mobileModeOverlay.classList.contains('active')) {
+                    switchToDesktop();
+                }
+            }
+        });
+
+        function openMobileWindow(windowId, title, src) {
+            // Create or get mobile window container
+            let mobileWindow = document.querySelector('.mobile-window');
+            if (!mobileWindow) {
+                mobileWindow = document.createElement('div');
+                mobileWindow.className = 'mobile-window';
+                document.body.appendChild(mobileWindow);
+            }
+
+            // Create window content
+            mobileWindow.innerHTML = `
+                <div class="mobile-window-header">
+                    <button class="mobile-back-button" onclick="closeMobileWindow()">← Back</button>
+                    <span>${title}</span>
+                    <div style="width: 60px;"></div>
+                </div>
+                <div class="mobile-window-content">
+                    <iframe src="${src}" frameborder="0" allow="fullscreen"></iframe>
+                </div>
+            `;
+
+            mobileWindow.classList.add('active');
+            
+            // Add touch event handlers for the back button
+            const backButton = mobileWindow.querySelector('.mobile-back-button');
+            backButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            backButton.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                this.style.transform = 'scale(1)';
+                closeMobileWindow();
+            });
+        }
+
+        function closeMobileWindow() {
+            const mobileWindow = document.querySelector('.mobile-window');
+            if (mobileWindow) {
+                mobileWindow.classList.remove('active');
+                const iframe = mobileWindow.querySelector('iframe');
+                if (iframe) {
+                    iframe.src = 'about:blank';
+                }
+            }
+        }
+
+        // Add event listener for window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                mobileMode();
+            }
+        });
+
+        // Initialize mobile mode if on a mobile device
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                mobileMode();
+            }
+        });
+
+        function getWindowSource(windowId) {
+            const sources = {
+                'index-window': '/index',
+                'hid-window': '/hid/',
+                'console-window': '/console',
+                'nmap-window': '/nmap',
+                'metasploit-window': '/metasploit',
+                'wireless-window': '/wireless',
+                'findings-window': '/findings',
+                'settings-window': '/settings',
+                'app_launcher-window': '/app_launcher',
+                'live_feed-window': '/live_feed',
+                'file_browser-window': '/file_browser',
+                'vnc-window': '/vnc'
+            };
+            return sources[windowId] || '/';
+        }
+
+        /**
+         * Prevents the default scrolling behavior.
+         * @param {Event} e - The event object.
+         */
+        function preventScroll(e) {
+            e.preventDefault();
+        }
+
+        /**
+         * Handles the Escape key to exit fullscreen.
+         * @param {Event} e - The event object.
+         */
+        function handleEscape(e) {
+            if (e.key === 'Escape') {
+                const fullscreenWindow = document.querySelector('.window.full-screen');
+                if (fullscreenWindow) {
+                    exitFullScreen(fullscreenWindow);
+                }
+            }
+        }
+
+        // ======================== Core Functions ============================
+
+        /**
+         * Centers a window within the desktop area.
+         * @param {HTMLElement} windowElement - The window element to center.
+         */
+        function centerWindow(windowElement) {
+            const desktop = document.querySelector('.desktop');
+            const desktopRect = desktop.getBoundingClientRect();
+            const windowRect = windowElement.getBoundingClientRect();
+
+            const left = Math.max((desktopRect.width - windowRect.width) / 2, 0); // No padding
+            const top = Math.max((desktopRect.height - windowRect.height) / 2, 0); // No padding
+
+            windowElement.style.left = `${left}px`;
+            windowElement.style.top = `${top}px`;
+        }
+
+        /**
+         * Makes a window draggable within the desktop area.
+         * @param {HTMLElement} windowElement - The window element to make draggable.
+         */
+        function makeDraggable(windowElement) {
+            const header = windowElement.querySelector('.window-header');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                const rect = windowElement.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                windowElement.style.zIndex = getNextZIndex();
+                document.body.style.userSelect = 'none'; // Prevent text selection
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    let left = e.clientX - offsetX;
+                    let top = e.clientY - offsetY;
+
+                    // Get desktop boundaries
+                    const desktop = document.querySelector('.desktop');
+                    const desktopRect = desktop.getBoundingClientRect();
+
+                    // Get window dimensions
+                    const windowRect = windowElement.getBoundingClientRect();
+
+                    // Constrain within desktop (no padding)
+                    left = Math.max(desktopRect.left, Math.min(left, desktopRect.right - windowRect.width));
+                    top = Math.max(desktopRect.top, Math.min(top, desktopRect.bottom - windowRect.height));
+
+                    windowElement.style.left = `${left}px`;
+                    windowElement.style.top = `${top}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+                document.body.style.userSelect = 'auto'; // Restore text selection
+            });
+        }
+
+        /**
+         * Makes a window resizable.
+         * @param {HTMLElement} windowElement - The window element to make resizable.
+         * @param {HTMLElement} resizer - The resizer element.
+         */
+        function makeResizable(windowElement, resizer) {
+            let isResizing = false;
+            let lastX, lastY;
+
+            resizer.addEventListener('mousedown', function (e) {
+                isResizing = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isResizing) return;
+
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+
+                const desktop = document.querySelector('.desktop');
+                const desktopRect = desktop.getBoundingClientRect();
+                const windowRect = windowElement.getBoundingClientRect();
+
+                // Constrain width and height
+                const newWidth = Math.min(windowRect.width + dx, desktopRect.width - windowRect.left);
+                const newHeight = Math.min(windowRect.height + dy, desktopRect.height - windowRect.top);
+
+                windowElement.style.width = `${Math.max(100, newWidth)}px`;
+                windowElement.style.height = `${Math.max(100, newHeight)}px`;
+
+                lastX = e.clientX;
+                lastY = e.clientY;
+            });
+
+            document.addEventListener('mouseup', function () {
+                isResizing = false;
+            });
+        }
+
+        /**
+         * Creates a taskbar button for a window.
+         * @param {string} buttonId - The unique ID for the taskbar button.
+         * @param {string} icon - The icon text.
+         * @param {string} title - The window title.
+         * @param {HTMLElement} windowElement - The associated window element.
+         */
+        function createTaskbarButton(buttonId, icon, title, windowElement) {
+            const taskbarButtons = document.getElementById('taskbar-buttons');
+            const button = document.createElement('button');
+            button.classList.add('taskbar-button');
+            button.id = buttonId;
+            button.setAttribute('data-window', windowElement.id);
+            button.innerHTML = `${icon} ${title}`;
+            taskbarButtons.appendChild(button);
+
+            // Add click event to bring window to front
+            button.addEventListener('click', function() {
+                windowElement.classList.remove('hidden');
+                windowElement.style.zIndex = getNextZIndex();
+                button.classList.add('active');
+            });
+
+            // Add right-click event for context menu
+            button.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showTaskbarContextMenu(e.pageX, e.pageY, windowElement, button);
+            });
+        }
+
+        /**
+         * Shows a custom context menu for taskbar buttons.
+         * @param {number} x - The x-coordinate for the menu position.
+         * @param {number} y - The y-coordinate for the menu position.
+         * @param {HTMLElement} windowElement - The window element associated.
+         * @param {HTMLElement} taskbarButton - The taskbar button associated.
+         */
+        function showTaskbarContextMenu(x, y, windowElement, taskbarButton) {
+            const contextMenu = document.getElementById('taskbar-context-menu');
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+            contextMenu.style.display = 'flex';
+            contextMenu.style.flexDirection = 'column';
+
+            // Assign actions to menu options
+            const closeOption = document.getElementById('close-taskbar-window');
+            closeOption.onclick = function() {
+                windowElement.remove();
+                taskbarButton.remove();
+                contextMenu.style.display = 'none';
+            };
+
+            // Hide context menu when clicking elsewhere
+            document.addEventListener('click', function handler() {
+                contextMenu.style.display = 'none';
+                document.removeEventListener('click', handler);
+            });
+        }
+
+        function handleMaximize(windowElement) {
+            const desktop = document.querySelector('.desktop');
+            const desktopRect = desktop.getBoundingClientRect();
+
+            if (windowElement.classList.contains('maximized')) {
+                // Restore original size and position
+                windowElement.style.width = windowElement.dataset.originalWidth;
+                windowElement.style.height = windowElement.dataset.originalHeight;
+                windowElement.style.left = windowElement.dataset.originalLeft;
+                windowElement.style.top = windowElement.dataset.originalTop;
+                windowElement.classList.remove('maximized');
+            } else {
+                // Save original size and position
+                const windowRect = windowElement.getBoundingClientRect();
+                windowElement.dataset.originalWidth = `${windowRect.width}px`;
+                windowElement.dataset.originalHeight = `${windowRect.height}px`;
+                windowElement.dataset.originalLeft = `${windowRect.left}px`;
+                windowElement.dataset.originalTop = `${windowRect.top}px`;
+
+                // Maximize to fit within desktop bounds
+                windowElement.style.width = `${desktopRect.width}px`;
+                windowElement.style.height = `${desktopRect.height - 40}px`; // Leave room for taskbar
+                windowElement.style.left = '0px';
+                windowElement.style.top = '0px';
+                windowElement.classList.add('maximized');
+            }
+        }
+
+
+        /**
+         * Enters fullscreen mode for a window.
+         * @param {HTMLElement} windowElement - The window element to fullscreen.
+         */
+        function enterFullScreen(windowElement) {
+            const desktop = document.querySelector('.desktop');
+            const desktopRect = desktop.getBoundingClientRect();
+
+            windowElement.style.left = '0px';
+            windowElement.style.top = '0px';
+            windowElement.style.width = `${desktopRect.width}px`;
+            windowElement.style.height = `${desktopRect.height}px`; // Include taskbar space
+            windowElement.classList.add('full-screen');
+
+            // Update maximize button
+            const maximizeButton = windowElement.querySelector('.maximize-button');
+            if (maximizeButton) {
+                maximizeButton.textContent = '🗗'; // Exit Fullscreen Icon
+                maximizeButton.title = 'Exit Full Screen';
+            }
+        }
+
+
+        /**
+         * Exits fullscreen mode for a window.
+         * @param {HTMLElement} windowElement - The window element to exit fullscreen.
+         */
+        function exitFullScreen(windowElement) {
+            if (!windowElement.classList.contains('full-screen')) return;
+
+            windowElement.style.width = windowElement.dataset.originalWidth;
+            windowElement.style.height = windowElement.dataset.originalHeight;
+            windowElement.style.left = windowElement.dataset.originalLeft;
+            windowElement.style.top = windowElement.dataset.originalTop;
+            windowElement.classList.remove('full-screen');
+
+            // Update maximize button
+            const maximizeButton = windowElement.querySelector('.maximize-button');
+            if (maximizeButton) {
+                maximizeButton.textContent = '🗖'; // Enter Fullscreen Icon
+                maximizeButton.title = 'Enter Full Screen';
+            }
+        }
+
+        /**
+         * Handles window controls: minimize, maximize, close.
+         * @param {HTMLElement} windowElement - The window element.
+         */
+        function handleWindowControls(windowElement) {
+            const minimizeButton = windowElement.querySelector('.minimize-button');
+            const maximizeButton = windowElement.querySelector('.maximize-button');
+            const closeButton = windowElement.querySelector('.close-button');
+
+            const title = windowElement.querySelector('.window-header .title').textContent;
+            const icon = windowElement.querySelector('.window-header .icon').textContent;
+
+            const taskbarButtonId = `${windowElement.id}-taskbar-button`;
+
+            // Create taskbar button for the window
+            createTaskbarButton(taskbarButtonId, icon, title, windowElement);
+
+            // Minimize functionality
+            minimizeButton.addEventListener('click', function () {
+                windowElement.classList.add('hidden');
+                const taskbarButton = document.getElementById(taskbarButtonId);
+                if (taskbarButton) {
+                    taskbarButton.classList.remove('active');
+                }
+            });
+
+            // Maximize functionality
+            maximizeButton.addEventListener('click', function () {
+                if (windowElement.classList.contains('maximized')) {
+                    handleMaximize(windowElement);
+                } else if (windowElement.classList.contains('full-screen')) {
+                    exitFullScreen(windowElement);
+                } else {
+                    handleMaximize(windowElement);
+                }
+            });
+
+            // Close functionality
+            closeButton.addEventListener('click', function () {
+                windowElement.remove();
+                const taskbarButton = document.getElementById(taskbarButtonId);
+                if (taskbarButton) {
+                    taskbarButton.remove();
+                }
+            });
+
+            // Set active state when window is focused
+            windowElement.addEventListener('mousedown', function () {
+                document.querySelectorAll('.taskbar-button').forEach(btn => btn.classList.remove('active'));
+                const taskbarButton = document.getElementById(taskbarButtonId);
+                if (taskbarButton) {
+                    taskbarButton.classList.add('active');
+                }
+            });
+        }
+
+        /**
+         * Creates and opens a window.
+         * @param {string} windowId - The unique ID for the window.
+         * @param {string} title - The window title.
+         * @param {string} src - The source URL for the iframe.
+         */
+        function createWindow(windowId, title, src) {
+            // Check if window already exists
+            const existingWindow = document.getElementById(windowId);
+            if (existingWindow) {
+                // Bring to front and show if hidden
+                existingWindow.style.zIndex = getNextZIndex();
+                existingWindow.classList.remove('hidden');
+                return;
+            }
+
+            // Create window elements
+            const windowElement = document.createElement('div');
+            windowElement.classList.add('window');
+            windowElement.id = windowId;
+            windowElement.tabIndex = 0; // Make window focusable
+
+            // Window Header
+            const header = document.createElement('div');
+            header.classList.add('window-header');
+
+            const iconDiv = document.createElement('div');
+            iconDiv.classList.add('icon');
+            iconDiv.textContent = document.querySelector(`.desktop-icon[data-window="${windowId}"] div`).textContent;
+
+            const titleSpan = document.createElement('span');
+            titleSpan.classList.add('title');
+            titleSpan.textContent = title;
+
+            const controlsDiv = document.createElement('div');
+            controlsDiv.classList.add('controls');
+
+            const minimizeButton = document.createElement('button');
+            minimizeButton.classList.add('minimize-button');
+            minimizeButton.title = 'Minimize';
+            minimizeButton.textContent = '🗕';
+
+            const maximizeButton = document.createElement('button');
+            maximizeButton.classList.add('maximize-button');
+            maximizeButton.title = 'Maximize';
+            maximizeButton.textContent = '🗖';
+
+            const closeButton = document.createElement('button');
+            closeButton.classList.add('close-button');
+            closeButton.title = 'Close';
+            closeButton.textContent = '✖';
+
+            controlsDiv.appendChild(minimizeButton);
+            controlsDiv.appendChild(maximizeButton);
+            controlsDiv.appendChild(closeButton);
+            header.appendChild(iconDiv);
+            header.appendChild(titleSpan);
+            header.appendChild(controlsDiv);
+
+            // Window Content
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('window-content');
+
+            const iframe = document.createElement('iframe');
+            iframe.src = src;
+            iframe.id = `${windowId}-iframe`;
+
+            contentDiv.appendChild(iframe);
+
+            // Append header and content to window
+            windowElement.appendChild(header);
+            windowElement.appendChild(contentDiv);
+
+            // Append resizer
+            const resizer = document.createElement('div');
+            resizer.classList.add('window-resizer');
+            windowElement.appendChild(resizer);
+
+            // Append window to desktop
+            const desktop = document.querySelector('.desktop');
+            desktop.appendChild(windowElement);
+
+            // Center the window
+            centerWindow(windowElement);
+
+            // Make draggable and handle controls
+            makeDraggable(windowElement);
+            handleWindowControls(windowElement);
+
+            // Make resizable
+            makeResizable(windowElement, resizer);
+        }
+
+        /**
+         * Initializes event listeners for desktop icons.
+         */
+        function initializeIconListeners() {
+            document.querySelectorAll('.desktop-icon').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const windowId = this.getAttribute('data-window');
+                    const title = this.querySelector('span').textContent;
+                    let src = '/'; // Default source
+
+                    switch(windowId) {
+                        case 'index-window':
+                            src = '/index';
+                            break;
+                        case 'hid-window':
+                            src = '/hid/';
+                            break;
+                        case 'console-window':
+                            src = '/console';
+                            break;
+                        case 'nmap-window':
+                            src = '/nmap';
+                            break;
+                        case 'metasploit-window':
+                            src = '/metasploit';
+                            break;
+                        case 'wireless-window':
+                            src = '/wireless';
+                            break;
+                        case 'findings-window':
+                            src = '/findings';
+                            break;
+                        case 'settings-window':
+                            src = '/settings';
+                            break;
+                        case 'app_launcher-window':
+                            src = '/app_launcher';
+                            break;
+                        case 'live_feed-window':
+                            src = '/live_feed';
+                            break;
+                        case 'file_browser-window':
+                            src = '/file_browser';
+                            break;
+                        case 'vnc-window':
+                            src = '/vnc';
+                            break;
+                        case 'fullscreen-window':
+                            src = '/fullscreen';
+                            break;
+                        // Add more cases as needed
+                        default:
+                            src = '/';
+                    }
+
+                    createWindow(windowId, title, src);
+                });
+            });
+        }
+
+        /**
+         * Initializes event listeners for start menu items.
+         */
+        function initializeStartMenuListeners() {
+            document.querySelectorAll('.start-menu .menu-item').forEach(menuItem => {
+                menuItem.addEventListener('click', function() {
+                    const windowId = this.getAttribute('data-window');
+                    const title = this.querySelector('span').textContent;
+                    let src = '/'; // Default source
+
+                    switch(windowId) {
+                        case 'index-window':
+                            src = '/index';
+                            break;
+                        case 'hid-window':
+                            src = '/hid/';
+                            break;
+                        case 'console-window':
+                            src = '/console';
+                            break;
+                        case 'nmap-window':
+                            src = '/nmap';
+                            break;
+                        case 'metasploit-window':
+                            src = '/metasploit';
+                            break;
+                        case 'wireless-window':
+                            src = '/wireless';
+                            break;
+                        case 'findings-window':
+                            src = '/findings';
+                            break;
+                        case 'settings-window':
+                            src = '/settings';
+                            break;
+                        case 'app_launcher-window':
+                            src = '/app_launcher';
+                            break;
+                        case 'live_feed-window':
+                            src = '/live_feed';
+                            break;
+                        case 'file_browser-window':
+                            src = '/file_browser';
+                            break;
+                        case 'vnc-window':
+                            src = '/vnc';
+                            break;
+                        // Add more cases as needed
+                        default:
+                            src = '/';
+                    }
+
+                    createWindow(windowId, title, src);
+                    toggleStartMenu(); // Close start menu after opening
+                });
+            });
+        }
+
+        /**
+         * Initializes the theme based on localStorage.
+         */
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'light-theme';
+            applyTheme(savedTheme);
+            const themeChanger = document.getElementById('theme-changer');
+            if (themeChanger) {
+                themeChanger.value = savedTheme;
+            }
+        }
+
+        /**
+         * Sets up theme change listeners.
+         */
+        function setupThemeListeners() {
+            const themeChanger = document.getElementById('theme-changer');
+            if (themeChanger) {
+                themeChanger.addEventListener('change', function() {
+                    const selectedTheme = this.value;
+                    applyTheme(selectedTheme);
+                    localStorage.setItem('selectedTheme', selectedTheme);
+                });
+            }
+
+            // Listen for storage events to apply theme changes across tabs
+            window.addEventListener('storage', function(event) {
+                if (event.key === 'selectedTheme') {
+                    applyTheme(event.newValue);
+                    const themeChanger = document.getElementById('theme-changer');
+                    if (themeChanger) {
+                        themeChanger.value = event.newValue;
+                    }
+                }
+            });
+        }
+
+        /**
+         * Initializes responsive design features.
+         */
+        function initializeResponsiveDesign() {
+            const startButton = document.getElementById('start-button');
+            const startMenu = document.getElementById('start-menu');
+
+            startButton.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent click from bubbling to document
+                toggleStartMenu();
+            });
+
+            // Close start menu when clicking outside
+            document.addEventListener('click', function() {
+                startMenu.style.display = 'none';
+            });
+
+            // Prevent start menu click from closing it
+            startMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Initialize start menu listeners
+            initializeStartMenuListeners();
+
+            // Mobile Mode Button
+            const mobileModeButton = document.getElementById('mobile-mode-button');
+            const mobileModeOverlay = document.getElementById('mobile-mode-overlay');
+            const switchToDesktopButton = document.getElementById('switch-to-desktop');
+
+            mobileModeButton.addEventListener('click', function() {
+                mobileModeOverlay.classList.add('active');
+            });
+
+            switchToDesktopButton.addEventListener('click', function() {
+                mobileModeOverlay.classList.remove('active');
+            });
+        }
+
+        /**
+         * Toggles the visibility of the start menu.
+         */
+        function toggleStartMenu() {
+            const startMenu = document.getElementById('start-menu');
+            if (startMenu.style.display === 'flex') {
+                startMenu.style.display = 'none';
+            } else {
+                startMenu.style.display = 'flex';
+                startMenu.style.flexDirection = 'column';
+            }
+        }
+
+        /**
+         * Initializes the mobile mode button.
+         */
+        function initializeMobileModeButton() {
+            const mobileModeButton = document.getElementById('mobile-mode-button');
+            const mobileModeOverlay = document.getElementById('mobile-mode-overlay');
+            const switchToDesktopButton = document.getElementById('switch-to-desktop');
+
+            mobileModeButton.addEventListener('click', function() {
+                mobileModeOverlay.classList.add('active');
+            });
+
+            switchToDesktopButton.addEventListener('click', function() {
+                mobileModeOverlay.classList.remove('active');
+            });
+        }
+
+        /**
+         * Initializes unique icon colors based on theme.
+         * Ensures each icon has a unique color that adapts with the theme.
+         */
+        function initializeIconColors() {
+            // Define unique color sets for each theme
+            const themeIconColors = {
+                'light-theme': [
+                    '#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6',
+                    '#1abc9c', '#e67e22', '#34495e', '#95a5a6', '#d35400',
+                    '#c0392b', '#00acc1'
+                ],
+                'dark-theme': [
+                    '#1abc9c', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6',
+                    '#3498db', '#e67e22', '#34495e', '#95a5a6', '#d35400',
+                    '#c0392b', '#00acc1'
+                ],
+                'blue-nebula-theme': [
+                    '#5dade2', '#2980b9', '#1c6ea4', '#3498db', '#2980b9',
+                    '#5dade2', '#1c6ea4', '#2980b9', '#5dade2', '#1c6ea4',
+                    '#2980b9', '#5dade2'
+                ],
+                'sunset-boulevard-theme': [
+                    '#ff7e5f', '#feb47b', '#ffca3a', '#ff7e5f', '#feb47b',
+                    '#ffca3a', '#ff7e5f', '#feb47b', '#ffca3a', '#ff7e5f',
+                    '#feb47b', '#ffca3a'
+                ],
+                'cyberpunk-theme': [
+                    '#ff00ff', '#00ffff', '#ff00ff', '#00ffff', '#ff00ff',
+                    '#00ffff', '#ff00ff', '#00ffff', '#ff00ff', '#00ffff',
+                    '#ff00ff', '#00ffff'
+                ],
+                'aurora-theme': [
+                    '#6dd5ed', '#00f260', '#6dd5ed', '#00f260', '#6dd5ed',
+                    '#00f260', '#6dd5ed', '#00f260', '#6dd5ed', '#00f260',
+                    '#6dd5ed', '#00f260'
+                ],
+                'minimalist-theme': [
+                    '#ffffff', '#f0f0f0', '#ffffff', '#f0f0f0', '#ffffff',
+                    '#f0f0f0', '#ffffff', '#f0f0f0', '#ffffff', '#f0f0f0',
+                    '#ffffff', '#f0f0f0'
+                ],
+                'neon-lights-theme': [
+                    '#39ff14', '#00ffff', '#39ff14', '#00ffff', '#39ff14',
+                    '#00ffff', '#39ff14', '#00ffff', '#39ff14', '#00ffff',
+                    '#39ff14', '#00ffff'
+                ],
+                'galaxy-theme': [
+                    '#5d3fd3', '#6a5acd', '#5d3fd3', '#6a5acd', '#5d3fd3',
+                    '#6a5acd', '#5d3fd3', '#6a5acd', '#5d3fd3', '#6a5acd',
+                    '#5d3fd3', '#6a5acd'
+                ]
+            };
+
+            const theme = localStorage.getItem('selectedTheme') || 'light-theme';
+            const colors = themeIconColors[theme] || themeIconColors['light-theme'];
+
+            document.querySelectorAll('.desktop-icon').forEach((icon, index) => {
+                const color = colors[index % colors.length];
+                icon.style.backgroundColor = color;
+                icon.querySelector('span').style.color = getContrastYIQ(color);
+            });
+
+            document.querySelectorAll('.start-menu .menu-item').forEach((menuItem, index) => {
+                const color = colors[index % colors.length];
+                menuItem.querySelector('.start-menu-icon').style.backgroundColor = color;
+                menuItem.querySelector('.start-menu-icon').style.color = getContrastYIQ(color);
+            });
+        }
+
+        /**
+         * Calculates a contrasting color (black or white) based on the background color.
+         * @param {string} hexcolor - The background color in HEX format.
+         * @returns {string} The contrasting color ('#000000' or '#FFFFFF').
+         */
+        function getContrastYIQ(hexcolor) {
+            hexcolor = hexcolor.replace("#", "");
+            if (hexcolor.length === 3) {
+                hexcolor = hexcolor.split('').map(c => c + c).join('');
+            }
+            const r = parseInt(hexcolor.substr(0,2),16);
+            const g = parseInt(hexcolor.substr(2,2),16);
+            const b = parseInt(hexcolor.substr(4,2),16);
+            const yiq = ((r*299)+(g*587)+(b*114))/1000;
+            return (yiq >= 128) ? '#000000' : '#FFFFFF';
+        }
+
+        /**
+         * Initializes unique icon colors based on theme.
+         * Ensures each icon has a unique color that adapts with the theme.
+         */
+        function initializeIconColors() {
+            initializeIconColorsUtility();
+
+            // Re-initialize icon colors whenever the theme changes
+            window.addEventListener('load', initializeIconColorsUtility);
+            window.addEventListener('storage', initializeIconColorsUtility);
+        }
+
+        function initializeIconColorsUtility() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'light-theme';
+            const themeChanger = document.getElementById('theme-changer');
+            themeChanger.value = savedTheme;
+            applyTheme(savedTheme);
+        }
+
+        /**
+         * Initializes all functionalities.
+         */
+        function initialize() {
+            initializeTheme();
+            setupThemeListeners();
+            initializeIconListeners();
+            initializeResponsiveDesign();
+            initializeMobileModeButton();
+            initializeIconColors();
+        }
+
+        // Initialize on DOM content loaded
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

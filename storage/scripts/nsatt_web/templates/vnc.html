@@ -1,0 +1,1307 @@
+<!-- vnc.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNC Control</title>
+    <style>
+        /* Root Variables */
+        :root {
+            /* Light Theme Variables */
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2c3e50;
+            --header-color: #ecf0f1;
+            --control-border: #bdc3c7;
+            --control-bg: #f8f9fa;
+            --control-color: #333333;
+            --control-hover-bg: #e2e6ea;
+            --control-hover-border: #a6b1c0;
+            --control-hover-color: #000000;
+            --tab-border: #bdc3c7;
+            --tab-bg: #ecf0f1;
+            --tab-color: #333333;
+            --tab-active-bg: #2c3e50;
+            --tab-active-color: #ecf0f1;
+            --video-border: #bdc3c7;
+            --modal-bg: rgba(0, 0, 0, 0.5);
+            --modal-content-bg: #ffffff;
+            --modal-border-radius: 8px;
+            --modal-button-bg: #1abc9c;
+            --modal-button-color: #ffffff;
+            --modal-button-hover-bg: #16a085;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --container-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #1abc9c;
+            --header-color: #2c3e50;
+            --control-border: #7f8c8d;
+            --control-bg: #2c3e50;
+            --control-color: #ecf0f1;
+            --control-hover-bg: #1abc9c;
+            --control-hover-border: #16a085;
+            --control-hover-color: #ffffff;
+            --tab-border: #7f8c8d;
+            --tab-bg: #1abc9c;
+            --tab-color: #ecf0f1;
+            --tab-active-bg: #2c3e50;
+            --tab-active-color: #ecf0f1;
+            --video-border: #7f8c8d;
+            --modal-bg: rgba(0, 0, 0, 0.7);
+            --modal-content-bg: #2c3e50;
+            --modal-border-radius: 8px;
+            --modal-button-bg: #e74c3c;
+            --modal-button-color: #ffffff;
+            --modal-button-hover-bg: #c0392b;
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-color);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid var(--control-border);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        /* Dark Mode and Keyboard Toggle Buttons */
+        #themeToggleButton, #keyboardToggleButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: var(--header-color);
+            margin-left: 10px;
+        }
+        #keyboardToggleButton {
+            right: 60px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tab-border);
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid var(--tab-border);
+            border-bottom: none;
+            background-color: var(--tab-bg);
+            color: var(--tab-color);
+            transition: background-color 0.3s, color 0.3s;
+            flex: 1;
+            text-align: center;
+        }
+        .tab.active {
+            background-color: var(--tab-active-bg);
+            color: var(--tab-active-color);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Controls Styles */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .controls button, .controls select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid var(--control-border);
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--control-bg);
+            color: var(--control-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .controls button:hover, .controls select:hover, .controls select:focus {
+            background-color: var(--control-hover-bg);
+            border-color: var(--control-hover-border);
+            color: var(--control-hover-color);
+        }
+        /* VNC Frame Styles */
+        #vncFrame {
+            width: 100%;
+            height: 80vh;
+            border: 2px solid var(--video-border);
+            border-radius: 8px;
+            display: block;
+            background-color: #000;
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .status.success {
+            color: #27ae60;
+        }
+        .status.error {
+            color: #c0392b;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--header-color);
+        }
+        @media (max-width: 768px) {
+            #vncFrame {
+                height: 60vh;
+            }
+        }
+        /* Session List Styles */
+        .session-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .session-list th, .session-list td {
+            border: 1px solid var(--control-border);
+            padding: 10px;
+            text-align: center;
+        }
+        .session-list th {
+            background-color: var(--tab-active-bg);
+            color: var(--tab-active-color);
+        }
+        .session-actions button {
+            margin: 2px;
+            padding: 5px 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--modal-button-bg);
+            color: var(--modal-button-color);
+            transition: background-color 0.3s;
+        }
+        .session-actions button:hover {
+            background-color: var(--modal-button-hover-bg);
+        }
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: var(--modal-bg);
+        }
+        .modal-content {
+            background-color: var(--modal-content-bg);
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid var(--control-border);
+            width: 80%;
+            max-width: 800px;
+            border-radius: var(--modal-border-radius);
+            position: relative;
+        }
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+        .close-modal:hover,
+        .close-modal:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-image {
+            width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            transition: width 0.3s, height 0.3s, transform 0.3s;
+        }
+        .modal-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider-container input[type="range"] {
+            width: 200px;
+        }
+        .modal-buttons button {
+            padding: 8px 12px;
+            margin-left: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--modal-button-bg);
+            color: var(--modal-button-color);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .modal-buttons button:hover {
+            background-color: var(--modal-button-hover-bg);
+        }
+        /* On-Screen Keyboard Modal */
+        .keyboard-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: var(--modal-content-bg);
+            border-top: 2px solid var(--control-border);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease-in-out;
+            transform: translateY(100%);
+        }
+        .keyboard-modal.active {
+            display: block;
+            transform: translateY(0);
+        }
+        .keyboard-content {
+            padding: 10px;
+            position: relative;
+        }
+        .close-keyboard {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .keyboard-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .keyboard-buttons button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid var(--control-border);
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--control-bg);
+            color: var(--control-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .keyboard-buttons button:hover {
+            background-color: var(--control-hover-bg);
+            border-color: var(--control-hover-border);
+            color: var(--control-hover-color);
+        }
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .controls button, .controls select {
+                width: 100%;
+                margin: 2px 0;
+            }
+            
+            .session-list {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .session-actions button {
+                margin: 2px;
+                padding: 8px;
+                font-size: 12px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                border: 1px solid var(--tab-border);
+                margin-bottom: -1px;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+            }
+            
+            .filter-buttons {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 5px;
+            }
+            
+            #vncFrame {
+                height: 50vh;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            .keyboard-modal {
+                height: 40vh;
+            }
+            
+            .keyboard-buttons {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 2px;
+            }
+            
+            .keyboard-buttons button {
+                padding: 5px;
+                font-size: 14px;
+            }
+        }
+
+        /* Notification Modal */
+        .notification-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            background-color: var(--modal-content-bg);
+            padding: 15px 20px;
+            border-radius: var(--modal-border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: auto;
+            text-align: center;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .notification-modal.success {
+            border-left: 4px solid #2ecc71;
+        }
+
+        .notification-modal.error {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .notification-modal.warning {
+            border-left: 4px solid #f1c40f;
+        }
+
+        /* Confirmation Modal */
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            z-index: 1999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+        }
+
+        .confirmation-content {
+            background-color: var(--modal-content-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: var(--modal-border-radius);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .confirmation-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .confirm-yes {
+            background-color: var(--modal-button-bg);
+            color: var(--modal-button-color);
+        }
+
+        .confirm-no {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>VNC Control Panel</h1>
+        <button id="keyboardToggleButton" onclick="toggleKeyboard()">🔤</button>
+        <button id="themeToggleButton" onclick="toggleTheme()">🌙</button>
+    </header>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('vnc')">VNC Session</div>
+            <div class="tab" onclick="switchTab('existing')">Existing Sessions</div>
+            <div class="tab" onclick="switchTab('saves')">Saves</div>
+        </div>
+
+        <!-- VNC Session Tab Content -->
+        <div id="vnc" class="tab-content active">
+            <div class="controls">
+                <button onclick="startVnc()">Start New Session</button>
+                <button onclick="restartAllSessions()">Restart All Sessions</button>
+                <button onclick="stopAllSessions()">Stop All Sessions</button>
+                <button onclick="takeScreenshotVNC()">Take Screenshot</button>
+                <button onclick="restartVnc()">Restart</button>
+            </div>
+            <iframe id="vncFrame" src=""></iframe>
+            <div id="vncStatus" class="status"></div>
+        </div>
+
+        <!-- Existing Sessions Tab Content -->
+        <div id="existing" class="tab-content">
+            <div class="controls">
+                <button onclick="bulkStopSessions()">Stop Selected</button>
+                <button onclick="bulkRestartSessions()">Restart Selected</button>
+            </div>
+            <table class="session-list">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Display</th>
+                        <th>VNC Port</th>
+                        <th>Websockify Port</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="sessionTableBody">
+                    <!-- Sessions will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Saves Tab Content -->
+        <div id="saves" class="tab-content">
+            <h2>Saved Screenshots</h2>
+            <div id="screenshotsVNC" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            <h2>Saved Videos</h2>
+            <div id="videosVNC" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 Live Feed & VNC Control Panel
+    </footer>
+
+    <!-- Modal Structure -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <img id="modalImage" class="modal-image" src="" alt="Screenshot">
+            <div class="modal-controls">
+                <div class="slider-container">
+                    <label for="resizeSlider">Resize:</label>
+                    <input type="range" id="resizeSlider" min="50" max="150" value="100">
+                </div>
+                <div class="modal-buttons">
+                    <button onclick="downloadImage()">Download</button>
+                    <button onclick="deleteImage()">Delete</button>
+                    <button onclick="renameImage()">Rename</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- On-Screen Keyboard Modal -->
+    <div id="onScreenKeyboard" class="keyboard-modal">
+        <div class="keyboard-content">
+            <span class="close-keyboard" onclick="closeKeyboard()">&times;</span>
+            <div class="keyboard-buttons">
+                <button onclick="typeKey('Q')">Q</button>
+                <button onclick="typeKey('W')">W</button>
+                <button onclick="typeKey('E')">E</button>
+                <button onclick="typeKey('R')">R</button>
+                <button onclick="typeKey('T')">T</button>
+                <button onclick="typeKey('Y')">Y</button>
+                <button onclick="typeKey('U')">U</button>
+                <button onclick="typeKey('I')">I</button>
+                <button onclick="typeKey('O')">O</button>
+                <button onclick="typeKey('P')">P</button>
+                <button onclick="typeKey('A')">A</button>
+                <button onclick="typeKey('S')">S</button>
+                <button onclick="typeKey('D')">D</button>
+                <button onclick="typeKey('F')">F</button>
+                <button onclick="typeKey('G')">G</button>
+                <button onclick="typeKey('H')">H</button>
+                <button onclick="typeKey('J')">J</button>
+                <button onclick="typeKey('K')">K</button>
+                <button onclick="typeKey('L')">L</button>
+                <button onclick="typeKey('Z')">Z</button>
+                <button onclick="typeKey('X')">X</button>
+                <button onclick="typeKey('C')">C</button>
+                <button onclick="typeKey('V')">V</button>
+                <button onclick="typeKey('B')">B</button>
+                <button onclick="typeKey('N')">N</button>
+                <button onclick="typeKey('M')">M</button>
+                <button onclick="typeKey('Backspace')">⌫</button>
+                <button onclick="typeKey('Space')">Space</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="notification-modal">
+        <span id="notificationMessage"></span>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="confirmation-content">
+            <h3 id="confirmationTitle"></h3>
+            <p id="confirmationMessage"></p>
+            <div class="confirmation-buttons">
+                <button class="confirm-no" onclick="handleConfirmation(false)">Cancel</button>
+                <button class="confirm-yes" onclick="handleConfirmation(true)">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeDisplay = null; // To store the currently active display
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('themeToggleButton').textContent = '☀️';
+            } else {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('themeToggleButton').textContent = '🌙';
+            }
+        }
+
+        // Keyboard Toggle
+        function toggleKeyboard() {
+            const keyboard = document.getElementById('onScreenKeyboard');
+            keyboard.classList.toggle('active');
+        }
+
+        function closeKeyboard() {
+            const keyboard = document.getElementById('onScreenKeyboard');
+            keyboard.classList.remove('active');
+        }
+
+        function typeKey(key) {
+            const activeElement = document.activeElement;
+            if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+                if (key === 'Backspace') {
+                    activeElement.value = activeElement.value.slice(0, -1);
+                } else if (key === 'Space') {
+                    activeElement.value += ' ';
+                } else {
+                    activeElement.value += key;
+                }
+            }
+        }
+
+        // Load Theme Preference
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (savedTheme === 'dark') {
+                document.getElementById('themeToggleButton').textContent = '☀️';
+            } else {
+                document.getElementById('themeToggleButton').textContent = '🌙';
+            }
+
+            // Load Existing Sessions
+            loadExistingSessions();
+            // Load Saves
+            loadSaves();
+        });
+
+        // Tab Switching
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.textContent.toLowerCase().includes(tabName));
+            });
+
+            contents.forEach(content => {
+                content.classList.toggle('active', content.id === tabName);
+            });
+
+            if (tabName === 'saves') {
+                loadSaves();
+            } else if (tabName === 'existing') {
+                loadExistingSessions();
+            }
+        }
+
+        // VNC Controls
+        async function startVnc() {
+            try {
+                const response = await fetch(`/vnc/start`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (response.ok && data.status === 'vnc_started') {
+                    logEvent(`VNC session ${data.display} started successfully.`);
+                    displayStatus('vncStatus', `VNC session ${data.display} started successfully.`, 'success');
+                    activeDisplay = data.display; // Store the active display
+                    showVncFrame(data.websockify_port);
+                    loadExistingSessions();
+                } else if (response.ok && data.status === 'vnc_already_running') {
+                    logEvent('VNC is already running.');
+                    displayStatus('vncStatus', 'VNC is already running.', 'success');
+                } else {
+                    logError(`Failed to start VNC: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to start VNC: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to start VNC: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error starting VNC: ${error}`);
+                console.error('Error starting VNC:', error);
+                displayStatus('vncStatus', 'Failed to start VNC.', 'error');
+                alert('Failed to start VNC.');
+            }
+        }
+
+        async function stopAllSessions() {
+            try {
+                const response = await fetch(`/vnc/stop_all`, { method: 'POST' });
+                const data = await response.json();
+                if (response.ok && data.status === 'all_vnc_stopped') {
+                    logEvent('All VNC sessions stopped successfully.');
+                    displayStatus('vncStatus', 'All VNC sessions stopped successfully.', 'success');
+                    hideVncFrame();
+                    activeDisplay = null; // Clear active display
+                    loadExistingSessions();
+                } else {
+                    logError(`Failed to stop all VNC sessions: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to stop all VNC sessions: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to stop all VNC sessions: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error stopping all VNC sessions: ${error}`);
+                console.error('Error stopping all VNC sessions:', error);
+                displayStatus('vncStatus', 'Failed to stop all VNC sessions.', 'error');
+                alert('Failed to stop all VNC sessions.');
+            }
+        }
+
+        async function restartAllSessions() {
+            try {
+                const response = await fetch(`/vnc/restart_all`, { method: 'POST' });
+                const data = await response.json();
+                if (response.ok && data.status === 'all_vnc_restarted') {
+                    logEvent('All VNC sessions restarted successfully.');
+                    displayStatus('vncStatus', 'All VNC sessions restarted successfully.', 'success');
+                    hideVncFrame();
+                    activeDisplay = null; // Reset active display
+                    loadExistingSessions();
+                } else {
+                    logError(`Failed to restart all VNC sessions: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to restart all VNC sessions: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to restart VNC sessions: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error restarting all VNC sessions: ${error}`);
+                console.error('Error restarting all VNC sessions:', error);
+                displayStatus('vncStatus', 'Failed to restart all VNC sessions.', 'error');
+                alert('Failed to restart all VNC sessions.');
+            }
+        }
+
+        async function restartVnc() {
+            if (!activeDisplay) {
+                alert('No active VNC session to restart.');
+                return;
+            }
+            try {
+                const response = await fetch(`/vnc/restart/${activeDisplay}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok && data.status === 'vnc_restarted') {
+                    logEvent(`VNC session ${activeDisplay} restarted successfully.`);
+                    displayStatus('vncStatus', `VNC session ${activeDisplay} restarted successfully.`, 'success');
+                    // Reload the iframe with the new port if changed
+                    showVncFrame(data.websockify_port);
+                    loadExistingSessions();
+                } else {
+                    logError(`Failed to restart VNC session ${activeDisplay}: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to restart VNC session ${activeDisplay}: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to restart VNC session ${activeDisplay}: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error restarting VNC session ${activeDisplay}: ${error}`);
+                console.error(`Error restarting VNC session ${activeDisplay}:`, error);
+                displayStatus('vncStatus', `Failed to restart VNC session ${activeDisplay}.`, 'error');
+                alert(`Failed to restart VNC session ${activeDisplay}.`);
+            }
+        }
+
+        async function bulkStopSessions() {
+            const checkboxes = document.querySelectorAll('.session-checkbox:checked');
+            const displays = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (displays.length === 0) {
+                showNotification('Please select at least one session to stop.', 'warning');
+                return;
+            }
+
+            showConfirmation(
+                'Stop Sessions',
+                `Are you sure you want to stop ${displays.length} session(s)?`,
+                async (confirmed) => {
+                    if (confirmed) {
+                        try {
+                            const response = await fetch(`/vnc/bulk_stop`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ displays })
+                            });
+                            const data = await response.json();
+                            
+                            if (response.ok) {
+                                showNotification(`Bulk stopped ${displays.length} session(s).`);
+                                if (activeDisplay && displays.includes(activeDisplay)) {
+                                    hideVncFrame();
+                                    activeDisplay = null;
+                                }
+                                loadExistingSessions();
+                            } else {
+                                showNotification(`Failed to bulk stop sessions: ${data.message || 'Unknown error.'}`, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Error bulk stopping sessions:', error);
+                            showNotification('Failed to bulk stop sessions.', 'error');
+                        }
+                    }
+                }
+            );
+        }
+
+        async function bulkRestartSessions() {
+            const checkboxes = document.querySelectorAll('.session-checkbox:checked');
+            const displays = Array.from(checkboxes).map(cb => cb.value);
+            if (displays.length === 0) {
+                alert('Please select at least one session to restart.');
+                return;
+            }
+            if (!confirm(`Are you sure you want to restart ${displays.length} session(s)?`)) {
+                return;
+            }
+            try {
+                const response = await fetch(`/vnc/bulk_restart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ displays })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    logEvent(`Bulk restarted sessions: ${displays.join(', ')}`);
+                    displayStatus('vncStatus', `Bulk restarted ${displays.length} session(s).`, 'success');
+                    // If any of the restarted sessions was active, reload the iframe
+                    if (activeDisplay && displays.includes(activeDisplay)) {
+                        hideVncFrame();
+                        activeDisplay = null;
+                    }
+                    loadExistingSessions();
+                } else {
+                    logError(`Failed to bulk restart sessions: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to bulk restart sessions: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to bulk restart sessions: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error bulk restarting sessions: ${error}`);
+                console.error('Error bulk restarting sessions:', error);
+                displayStatus('vncStatus', 'Failed to bulk restart sessions.', 'error');
+                alert('Failed to bulk restart sessions.');
+            }
+        }
+
+        async function takeScreenshotVNC() {
+            if (!activeDisplay) {
+                showNotification('No active VNC session to take a screenshot.', 'error');
+                return;
+            }
+
+            showConfirmation(
+                'Take Screenshot',
+                `Are you sure you want to take a screenshot for session ${activeDisplay}?`,
+                async (confirmed) => {
+                    if (confirmed) {
+                        try {
+                            const response = await fetch(`/vnc/take_screenshot/${activeDisplay}`, {
+                                method: 'POST'
+                            });
+                            const result = await response.json();
+                            
+                            if (response.ok && result.status === 'success') {
+                                showNotification(`Screenshot for ${activeDisplay} saved successfully.`);
+                                const activeTab = document.querySelector('.tab.active').textContent.toLowerCase();
+                                if (activeTab.includes('saves')) {
+                                    loadSaves();
+                                }
+                            } else {
+                                showNotification(`Failed to save screenshot: ${result.message || 'Unknown error.'}`, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Error taking VNC screenshot:', error);
+                            showNotification('Failed to take screenshot.', 'error');
+                        }
+                    }
+                }
+            );
+        }
+
+        // Status Display
+        function displayStatus(elementId, message, statusType) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.textContent = message;
+            statusElement.className = `status ${statusType}`;
+        }
+
+        // Logging Functions
+        function logEvent(message) {
+            console.log(`EVENT: ${message}`);
+        }
+
+        function logError(message) {
+            console.error(`ERROR: ${message}`);
+        }
+
+        // Modal Functionality
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageSrc;
+            modal.style.display = 'block';
+            document.getElementById('resizeSlider').value = 100;
+            modalImage.style.transform = 'scale(1)';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        // Resize Slider
+        document.getElementById('resizeSlider').addEventListener('input', function() {
+            const scale = this.value / 100;
+            document.getElementById('modalImage').style.transform = `scale(${scale})`;
+        });
+
+        // Download Image
+        function downloadImage() {
+            const modalImage = document.getElementById('modalImage');
+            const link = document.createElement('a');
+            link.href = modalImage.src;
+            link.download = modalImage.src.split('/').pop();
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Delete Image
+        async function deleteImage() {
+            const modalImage = document.getElementById('modalImage');
+            const filename = modalImage.src.split('/').pop();
+            if (confirm('Are you sure you want to delete this screenshot?')) {
+                try {
+                    const response = await fetch(`/vnc/delete_screenshot`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.status === 'success') {
+                        alert('Screenshot deleted successfully.');
+                        closeModal();
+                        loadSaves();
+                    } else {
+                        alert(`Failed to delete screenshot: ${result.message || 'Unknown error.'}`);
+                    }
+                } catch (error) {
+                    console.error('Error deleting screenshot:', error);
+                    alert('Failed to delete screenshot.');
+                }
+            }
+        }
+
+        // Rename Image
+        async function renameImage() {
+            const modalImage = document.getElementById('modalImage');
+            const oldFilename = modalImage.src.split('/').pop();
+            const newFilename = prompt('Enter new name for the screenshot (without extension):');
+            if (newFilename) {
+                try {
+                    const response = await fetch(`/vnc/rename_screenshot`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ oldFilename, newFilename })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.status === 'success') {
+                        alert('Screenshot renamed successfully.');
+                        closeModal();
+                        loadSaves();
+                    } else {
+                        alert(`Failed to rename screenshot: ${result.message || 'Unknown error.'}`);
+                    }
+                } catch (error) {
+                    console.error('Error renaming screenshot:', error);
+                    alert('Failed to rename screenshot.');
+                }
+            }
+        }
+
+        // Existing Sessions Management
+        async function loadExistingSessions() {
+            try {
+                const response = await fetch('/vnc/list', { method: 'GET' });
+                const data = await response.json();
+                if (response.ok && data.sessions) {
+                    const tableBody = document.getElementById('sessionTableBody');
+                    tableBody.innerHTML = '';
+                    data.sessions.forEach(session => {
+                        const row = document.createElement('tr');
+
+                        // Checkbox
+                        const selectCell = document.createElement('td');
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.classList.add('session-checkbox');
+                        checkbox.value = session.display;
+                        selectCell.appendChild(checkbox);
+                        row.appendChild(selectCell);
+
+                        // Display
+                        const displayCell = document.createElement('td');
+                        displayCell.textContent = session.display;
+                        row.appendChild(displayCell);
+
+                        // VNC Port
+                        const vncPortCell = document.createElement('td');
+                        vncPortCell.textContent = session.vnc_port;
+                        row.appendChild(vncPortCell);
+
+                        // Websockify Port
+                        const websockifyPortCell = document.createElement('td');
+                        websockifyPortCell.textContent = session.websockify_port;
+                        row.appendChild(websockifyPortCell);
+
+                        // Actions
+                        const actionsCell = document.createElement('td');
+                        actionsCell.classList.add('session-actions');
+
+                        // Connect Button
+                        const connectBtn = document.createElement('button');
+                        connectBtn.textContent = 'Connect';
+                        connectBtn.onclick = () => {
+                            const host = window.location.hostname; // Use the correct hostname instead of 'localhost'
+                            const url = `/static/noVNC/vnc.html?host=${host}&port=${session.websockify_port}&path=/websockify`;
+                            window.open(url, '_blank');
+                        };
+                        actionsCell.appendChild(connectBtn);
+
+                        // Stop Button
+                        const stopBtn = document.createElement('button');
+                        stopBtn.textContent = 'Stop';
+                        stopBtn.onclick = async () => {
+                            const confirmation = window.confirm(`Are you sure you want to stop session ${session.display}?`);
+                            if (confirmation) {
+                                await stopVnc(session.display);
+                                // If the stopped session was active, hide the iframe
+                                if (activeDisplay === session.display) {
+                                    hideVncFrame();
+                                    activeDisplay = null;
+                                }
+                            }
+                        };
+                        actionsCell.appendChild(stopBtn);
+
+                        // Restart Button
+                        const restartBtn = document.createElement('button');
+                        restartBtn.textContent = 'Restart';
+                        restartBtn.onclick = async () => {
+                            const confirmation = window.confirm(`Are you sure you want to restart session ${session.display}?`);
+                            if (confirmation) {
+                                await restartVncSession(session.display);
+                                // If the restarted session was active, update the iframe
+                                if (activeDisplay === session.display) {
+                                    showVncFrame(session.websockify_port);
+                                }
+                            }
+                        };
+                        actionsCell.appendChild(restartBtn);
+
+                        row.appendChild(actionsCell);
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    logError(`Failed to load sessions: ${data.message || 'Unknown error.'}`);
+                    alert(`Failed to load sessions: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error loading sessions: ${error}`);
+                console.error('Error loading sessions:', error);
+                alert('Failed to load sessions.');
+            }
+        }
+
+        // Saves Management
+        async function loadSaves() {
+            try {
+                const response = await fetch('/vnc/get_saves');
+                if (!response.ok) throw new Error('Failed to fetch saves.');
+                const data = await response.json();
+
+                // Load Screenshots
+                const screenshotsDiv = document.getElementById('screenshotsVNC');
+                screenshotsDiv.innerHTML = '';
+                (data.screenshots || []).forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.width = '200px';
+                    img.style.height = 'auto';
+                    img.style.border = '1px solid #ccc';
+                    img.style.borderRadius = '4px';
+                    img.style.cursor = 'pointer';
+                    img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    img.addEventListener('click', () => {
+                        openModal(src);
+                    });
+                    screenshotsDiv.appendChild(img);
+                });
+
+                // Load Videos
+                const videosDiv = document.getElementById('videosVNC');
+                videosDiv.innerHTML = '';
+                (data.videos || []).forEach(src => {
+                    const video = document.createElement('video');
+                    video.src = src;
+                    video.style.width = '200px';
+                    video.style.height = 'auto';
+                    video.style.border = '1px solid #ccc';
+                    video.style.borderRadius = '4px';
+                    video.style.cursor = 'pointer';
+                    video.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    video.controls = true;
+                    video.addEventListener('click', () => {
+                        window.open(src, '_blank');
+                    });
+                    videosDiv.appendChild(video);
+                });
+
+            } catch (error) {
+                console.error('Error loading saves:', error);
+                alert('Failed to load saved items.');
+            }
+        }
+
+        // Show VNC Frame
+        function showVncFrame(websockify_port) {
+            const vncFrame = document.getElementById('vncFrame');
+            vncFrame.src = `/static/noVNC/vnc.html?host=${window.location.hostname}&port=${websockify_port}&path=/websockify`;
+            vncFrame.style.display = 'block';
+            logEvent('VNC iframe displayed.');
+        }
+
+        // Hide VNC Frame
+        function hideVncFrame() {
+            const vncFrame = document.getElementById('vncFrame');
+            vncFrame.src = '';
+            vncFrame.style.display = 'none';
+            logEvent('VNC iframe hidden.');
+        }
+
+        // Stop VNC Session
+        async function stopVnc(display) {
+            try {
+                const response = await fetch(`/vnc/stop/${display}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok && data.status === 'vnc_stopped') {
+                    logEvent(`VNC session ${display} stopped successfully.`);
+                    displayStatus('vncStatus', `VNC session ${display} stopped successfully.`, 'success');
+                    loadExistingSessions(); // Refresh session list
+                } else {
+                    logError(`Failed to stop VNC session ${display}: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to stop VNC session ${display}: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to stop VNC session ${display}: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error stopping VNC session ${display}: ${error}`);
+                console.error('Error stopping VNC session:', error);
+                displayStatus('vncStatus', 'Failed to stop VNC session.', 'error');
+                alert('Failed to stop VNC session.');
+            }
+        }
+
+        // Restart VNC Session
+        async function restartVncSession(display) {
+            try {
+                const response = await fetch(`/vnc/restart/${display}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok && data.status === 'vnc_restarted') {
+                    logEvent(`VNC session ${display} restarted successfully.`);
+                    displayStatus('vncStatus', `VNC session ${display} restarted successfully.`, 'success');
+                    loadExistingSessions(); // Refresh session list
+                    // If the restarted session is the active one, reload the iframe
+                    if (activeDisplay === display) {
+                        showVncFrame(data.websockify_port);
+                    }
+                } else {
+                    logError(`Failed to restart VNC session ${display}: ${data.message || 'Unknown error.'}`);
+                    displayStatus('vncStatus', `Failed to restart VNC session ${display}: ${data.message || 'Unknown error.'}`, 'error');
+                    alert(`Failed to restart VNC session ${display}: ${data.message || 'Unknown error.'}`);
+                }
+            } catch (error) {
+                logError(`Error restarting VNC session ${display}: ${error}`);
+                console.error('Error restarting VNC session:', error);
+                displayStatus('vncStatus', 'Failed to restart VNC session.', 'error');
+                alert('Failed to restart VNC session.');
+            }
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success', duration = 3000) {
+            const modal = document.getElementById('notificationModal');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            modal.className = 'notification-modal ' + type;
+            messageEl.textContent = message;
+            modal.style.display = 'block';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, duration);
+        }
+
+        // Confirmation System
+        let confirmationCallback = null;
+
+        function showConfirmation(title, message, callback) {
+            const modal = document.getElementById('confirmationModal');
+            const titleEl = document.getElementById('confirmationTitle');
+            const messageEl = document.getElementById('confirmationMessage');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.style.display = 'block';
+            confirmationCallback = callback;
+        }
+
+        function handleConfirmation(confirmed) {
+            const modal = document.getElementById('confirmationModal');
+            modal.style.display = 'none';
+            
+            if (confirmationCallback) {
+                confirmationCallback(confirmed);
+                confirmationCallback = null;
+            }
+        }
+
+        // Close modal when clicking outside the content
+        window.onclick = function(event) {
+            const imageModal = document.getElementById('imageModal');
+            const keyboard = document.getElementById('onScreenKeyboard');
+            const confirmationModal = document.getElementById('confirmationModal');
+            
+            if (event.target == imageModal) {
+                imageModal.style.display = 'none';
+            }
+            if (event.target == keyboard) {
+                keyboard.classList.remove('active');
+            }
+            if (event.target == confirmationModal) {
+                confirmationModal.style.display = 'none';
+                if (confirmationCallback) {
+                    confirmationCallback(false);
+                    confirmationCallback = null;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

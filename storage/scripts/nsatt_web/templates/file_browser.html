@@ -1,0 +1,1871 @@
+<!-- file_browser.html -->
+{% extends "iframe_template.html" %}
+{% block title %}File Browser{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Browser</title>
+    <style>
+        /* Root Variables */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2c3e50;
+            --header-text: #ecf0f1;
+            --button-bg: #1abc9c;
+            --button-text: #ffffff;
+            --button-hover-bg: #16a085;
+            --table-header-bg: #ecf0f1;
+            --table-row-hover-bg: #f1f1f1;
+            --modal-bg: #ffffff;
+            --modal-text: #333333;
+            --border-color: #bdc3c7;
+            --action-color: #3498db;
+            --action-hover-color: #2980b9;
+            --toast-success-bg: #1abc9c;
+            --toast-error-bg: #e74c3c;
+            --toast-text-color: #ffffff;
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: #333333;
+            --sidebar-hover-bg: #e9ecef;
+            --table-border-color: #dee2e6;
+            --toggle-button-bg: #95a5a6;
+            --toggle-button-hover-bg: #7f8c8d;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --header-bg: #34495e;
+            --header-text: #ecf0f1;
+            --button-bg: #3498db;
+            --button-text: #ffffff;
+            --button-hover-bg: #2980b9;
+            --table-header-bg: #34495e;
+            --table-row-hover-bg: #3d566e;
+            --modal-bg: #3a5068;
+            --modal-text: #ecf0f1;
+            --border-color: #7f8c8d;
+            --action-color: #e74c3c;
+            --action-hover-color: #c0392b;
+            --toast-success-bg: #27ae60;
+            --toast-error-bg: #c0392b;
+            --toast-text-color: #ffffff;
+            --sidebar-bg: #3a5068;
+            --sidebar-text: #ecf0f1;
+            --sidebar-hover-bg: #34495e;
+            --table-border-color: #7f8c8d;
+            --toggle-button-bg: #95a5a6;
+            --toggle-button-hover-bg: #7f8c8d;
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Resizable Sidebar */
+        .sidebar-container {
+            display: flex;
+            height: 100%;
+            width: 250px;
+            min-width: 150px;
+            max-width: 400px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            overflow: hidden;
+            position: relative;
+            transition: width 0.3s;
+        }
+
+        .sidebar-container.collapsed {
+            width: 0;
+        }
+
+        .sidebar {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Drag Divider */
+        .drag-divider {
+            width: 5px;
+            cursor: ew-resize;
+            background-color: var(--border-color);
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Folder Tree */
+        .folder-tree {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .folder-tree li {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .folder-tree li:hover {
+            background-color: var(--sidebar-hover-bg);
+        }
+
+        .folder-tree .nested {
+            display: none;
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .folder-tree .active > .nested {
+            display: block;
+        }
+
+        .folder-tree .toggle-icon {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        /* Toggle Sidebar Button */
+        .toggle-sidebar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--toggle-button-bg);
+            border: none;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1em;
+        }
+
+        .toggle-sidebar:hover {
+            background-color: var(--toggle-button-hover-bg);
+        }
+
+        /* Dark Mode Toggle */
+        .toggle-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .toggle-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s;
+            font-size: 1em;
+        }
+
+        .toggle-container button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            margin: 10px 0;
+            font-size: 0.9em;
+            padding: 10px;
+            background-color: var(--table-header-bg);
+            border-radius: 4px;
+            color: var(--text-color);
+        }
+
+        .breadcrumbs button {
+            background: none;
+            border: none;
+            color: var(--action-color);
+            cursor: pointer;
+            padding: 0;
+            font-size: 1em;
+        }
+
+        .breadcrumbs button:hover {
+            text-decoration: underline;
+            color: var(--action-hover-color);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls .left-controls,
+        .controls .right-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Column Toggle */
+        .column-toggle {
+            position: relative;
+            display: inline-block;
+        }
+
+        .column-toggle button {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s;
+        }
+
+        .column-toggle button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        .column-toggle-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: var(--bg-color);
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .column-toggle:hover .column-toggle-content {
+            display: block;
+        }
+
+        .column-toggle-content label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        /* Filter Inputs */
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filters input,
+        .filters select {
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9em;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .filters input::placeholder {
+            color: #aaa;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            flex-grow: 1;
+            max-width: 300px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9em;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .search-bar input::placeholder {
+            color: #aaa;
+        }
+
+        /* Upload Button */
+        .controls input[type="file"] {
+            display: none;
+        }
+
+        .controls label.upload-label {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .controls label.upload-label:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Create Folder Button */
+        .controls button.create-folder {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s;
+        }
+
+        .controls button.create-folder:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Bulk Actions */
+        .bulk-actions button {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s;
+        }
+
+        .bulk-actions button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Refresh Button */
+        .controls button.refresh {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s;
+        }
+
+        .controls button.refresh:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid var(--table-border-color);
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            font-size: 1em;
+            cursor: pointer;
+            position: relative;
+        }
+
+        th.sortable:hover {
+            background-color: var(--table-row-hover-bg);
+        }
+
+        th .sort-arrow {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+
+        tr:hover {
+            background-color: var(--table-row-hover-bg);
+        }
+
+        /* Action Buttons */
+        .action-buttons button {
+            margin-right: 5px;
+            padding: 4px 6px;
+            font-size: 0.8em;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--action-color);
+            transition: color 0.3s;
+        }
+
+        .action-buttons button:hover {
+            color: var(--action-hover-color);
+        }
+
+        /* Modals */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            padding-top: 100px; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            margin: auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .close {
+            color: var(--text-color);
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #e74c3c;
+        }
+
+        /* Inputs in Modals */
+        .modal-content input[type="text"],
+        .modal-content textarea,
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1em;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .modal-content input[type="text"]::placeholder,
+        .modal-content textarea::placeholder {
+            color: #aaa;
+        }
+
+        .modal-content button {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s;
+        }
+
+        .modal-content button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Image, Video, Audio Viewers */
+        .viewer-content img,
+        .viewer-content video,
+        .viewer-content audio {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: var(--toast-success-bg);
+            color: var(--toast-text-color);
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1001;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            transition: visibility 0s, opacity 0.5s linear;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sidebar-container {
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar-container {
+                display: none;
+            }
+            body {
+                flex-direction: column;
+            }
+            .main-content {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .breadcrumbs {
+                font-size: 0.8em;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.8em;
+            }
+
+            .action-buttons button {
+                padding: 3px 4px;
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar for Folder Tree -->
+    <div class="sidebar-container" id="sidebarContainer">
+        <div class="sidebar">
+            <h3>Folders</h3>
+            <ul class="folder-tree" id="folderTree">
+                <!-- Folder tree will be populated here -->
+            </ul>
+        </div>
+        <div class="drag-divider" id="dragDivider"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+
+        <!-- Header -->
+        <header>
+            <button class="toggle-sidebar" id="toggleSidebarBtn" onclick="toggleSidebar()">📂</button>
+            <h2>File Browser</h2>
+            <!-- Dark Mode Toggle -->
+            <div class="toggle-container">
+                <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+            </div>
+        </header>
+
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs" id="breadcrumbs">
+            <!-- Breadcrumb items will be populated here -->
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="left-controls">
+                <input type="file" id="fileInput" multiple onchange="uploadFiles()">
+                <label for="fileInput" class="upload-label">📤 Upload File</label>
+                <button class="create-folder" onclick="openModal('createFolderModal')">📁 Create Folder</button>
+                <!-- Column Toggle -->
+                <div class="column-toggle">
+                    <button>📑 Columns</button>
+                    <div class="column-toggle-content" id="columnToggleContent">
+                        <label><input type="checkbox" class="column-checkbox" data-column="name" checked> Name</label>
+                        <label><input type="checkbox" class="column-checkbox" data-column="type" checked> Type</label>
+                        <label><input type="checkbox" class="column-checkbox" data-column="size" checked> Size</label>
+                        <label><input type="checkbox" class="column-checkbox" data-column="created" checked> Created</label>
+                        <label><input type="checkbox" class="column-checkbox" data-column="modified" checked> Modified</label>
+                        <label><input type="checkbox" class="column-checkbox" data-column="permissions" checked> Permissions</label>
+                        <!-- Actions column is always visible -->
+                    </div>
+                </div>
+            </div>
+            <div class="right-controls">
+                <!-- Filters -->
+                <div class="filters">
+                    <input type="text" id="filterName" placeholder="Filter by Name" oninput="applyFilters()">
+                    <select id="filterType" onchange="applyFilters()">
+                        <option value="">All Types</option>
+                        <option value="directory">Directory</option>
+                        <option value="file">File</option>
+                    </select>
+                    <input type="date" id="filterDate" onchange="applyFilters()">
+                </div>
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <input type="text" id="searchQuery" placeholder="Search..." oninput="applyFilters()">
+                </div>
+                <!-- Bulk Actions -->
+                <div class="bulk-actions">
+                    <button onclick="bulkDelete()">🗑️ Delete Selected</button>
+                    <button onclick="openBulkMoveModal()">📂 Move Selected</button>
+                </div>
+                <!-- Refresh Button -->
+                <button class="refresh" onclick="fetchFiles()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <!-- File List Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th data-column="select" style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                    <th class="sortable" onclick="sortTable('name')" data-column="name">Name <span class="sort-arrow" id="sort-name"></span></th>
+                    <th class="sortable" onclick="sortTable('type')" data-column="type">Type <span class="sort-arrow" id="sort-type"></span></th>
+                    <th class="sortable" onclick="sortTable('size')" data-column="size">Size <span class="sort-arrow" id="sort-size"></span></th>
+                    <th class="sortable" onclick="sortTable('created')" data-column="created">Created <span class="sort-arrow" id="sort-created"></span></th>
+                    <th class="sortable" onclick="sortTable('modified')" data-column="modified">Modified <span class="sort-arrow" id="sort-modified"></span></th>
+                    <th class="sortable" onclick="sortTable('permissions')" data-column="permissions">Permissions <span class="sort-arrow" id="sort-permissions"></span></th>
+                    <th data-column="actions" style="width: 120px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="fileList">
+                <!-- Files will be populated here -->
+            </tbody>
+        </table>
+
+        <!-- Modals -->
+        <!-- Create Folder Modal -->
+        <div id="createFolderModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('createFolderModal')">&times;</span>
+                <h3>Create New Folder</h3>
+                <input type="text" id="newFolderName" placeholder="Folder Name">
+                <button onclick="submitCreateFolder()">Create 📁</button>
+            </div>
+        </div>
+
+        <!-- Bulk Move Modal -->
+        <div id="bulkMoveModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('bulkMoveModal')">&times;</span>
+                <h3>Move Selected Items</h3>
+                <input type="text" id="bulkMoveDestination" placeholder="Destination Directory">
+                <button onclick="submitBulkMove()">Move 📂</button>
+            </div>
+        </div>
+
+        <!-- Rename Modal -->
+        <div id="renameModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('renameModal')">&times;</span>
+                <h3>Rename</h3>
+                <input type="text" id="renameNewName" placeholder="New Name">
+                <button onclick="submitRename()">Rename 🔄</button>
+            </div>
+        </div>
+
+        <!-- Confirm Delete Modal -->
+        <div id="confirmDeleteModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('confirmDeleteModal')">&times;</span>
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete <strong><span id="deleteFileName"></span></strong>?</p>
+                <button onclick="confirmDelete()">Delete 🗑️</button>
+                <button onclick="closeModal('confirmDeleteModal')">Cancel ❌</button>
+            </div>
+        </div>
+
+        <!-- Edit File Modal -->
+        <div id="editFileModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('editFileModal')">&times;</span>
+                <h3>Edit File: <span id="editFileName"></span></h3>
+                <textarea id="editFileContent" rows="10"></textarea>
+                <button onclick="saveFileEdit()">Save 💾</button>
+            </div>
+        </div>
+
+        <!-- File Details Modal -->
+        <div id="fileDetailsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('fileDetailsModal')">&times;</span>
+                <h3>File Details: <span id="detailsFileName"></span></h3>
+                <p><strong>Path:</strong> <span id="detailsFilePath"></span></p>
+                <p><strong>Type:</strong> <span id="detailsFileType"></span></p>
+                <p><strong>Size:</strong> <span id="detailsFileSize"></span></p>
+                <p><strong>Created:</strong> <span id="detailsFileCreated"></span></p>
+                <p><strong>Modified:</strong> <span id="detailsFileModified"></span></p>
+                <p><strong>Permissions:</strong> <span id="detailsFilePermissions"></span></p>
+                <div class="action-buttons">
+                    <button onclick="downloadFile(getSelectedFile())" title="Download">⬇️</button>
+                    <button onclick="editFile(getSelectedFile())" title="Edit">✏️</button>
+                    <button onclick="openRenameModal(getSelectedFile())" title="Rename">🔄</button>
+                    <button onclick="openDeleteModal(getSelectedFile())" title="Delete">🗑️</button>
+                    <button onclick="copyFile(getSelectedFile())" title="Copy">📋</button>
+                    <button onclick="moveFile(getSelectedFile())" title="Move">📂</button>
+                    <button onclick="changePermissions(getSelectedFile())" title="Change Permissions">🔒</button>
+                    <button onclick="openProperties(getSelectedFile())" title="Properties">ℹ️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties Modal -->
+        <div id="propertiesModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('propertiesModal')">&times;</span>
+                <h3>Properties: <span id="propertiesFileName"></span></h3>
+                <p><strong>Path:</strong> <span id="propertiesFilePath"></span></p>
+                <p><strong>Type:</strong> <span id="propertiesFileType"></span></p>
+                <p><strong>Size:</strong> <span id="propertiesFileSize"></span></p>
+                <p><strong>Created:</strong> <span id="propertiesFileCreated"></span></p>
+                <p><strong>Modified:</strong> <span id="propertiesFileModified"></span></p>
+                <p><strong>Permissions:</strong> <span id="propertiesFilePermissions"></span></p>
+            </div>
+        </div>
+
+        <!-- Image Viewer Modal -->
+        <div id="imageViewerModal" class="modal">
+            <div class="modal-content viewer-content">
+                <span class="close" onclick="closeModal('imageViewerModal')">&times;</span>
+                <h3>Image Viewer: <span id="imageViewerName"></span></h3>
+                <img id="imageViewerContent" src="" alt="Image Viewer">
+            </div>
+        </div>
+
+        <!-- Video Player Modal -->
+        <div id="videoPlayerModal" class="modal">
+            <div class="modal-content viewer-content">
+                <span class="close" onclick="closeModal('videoPlayerModal')">&times;</span>
+                <h3>Video Player: <span id="videoPlayerName"></span></h3>
+                <video id="videoPlayerContent" controls></video>
+            </div>
+        </div>
+
+        <!-- Audio Player Modal -->
+        <div id="audioPlayerModal" class="modal">
+            <div class="modal-content viewer-content">
+                <span class="close" onclick="closeModal('audioPlayerModal')">&times;</span>
+                <h3>Audio Player: <span id="audioPlayerName"></span></h3>
+                <audio id="audioPlayerContent" controls></audio>
+            </div>
+        </div>
+
+        <!-- Permissions Modal -->
+        <div id="permissionsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('permissionsModal')">&times;</span>
+                <h3>Change Permissions</h3>
+                <input type="text" id="permissionsInput" placeholder="e.g., 755">
+                <button onclick="submitChangePermissions()">Change 🔒</button>
+            </div>
+        </div>
+
+        <!-- Script -->
+        <script>
+            // Set the serverUrl as relative to avoid CORS issues if frontend is served by Flask
+            const serverUrl = '/file_browser'; // Prefix with '/file_browser' to match Flask blueprint
+
+            // Starting directory
+            let currentDirectory = '/home/nsatt-admin'; // Ensure this matches BASE_DIR in backend
+            let sortBy = 'name';
+            let sortOrder = 'asc';
+            let selectedFiles = new Set();
+            let pasteAction = null;
+            let copiedFile = null;
+            let columnPreferences = {};
+
+            // Theme Toggle
+            function toggleDarkMode() {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            }
+
+            // Toggle Sidebar
+            function toggleSidebar() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                sidebarContainer.classList.toggle('collapsed');
+            }
+
+            // Load Theme and Column Preferences and Initialize
+            document.addEventListener('DOMContentLoaded', () => {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                initializeColumns();
+                fetchFiles();
+                fetchFolderTree();
+            });
+
+            // Modal Handling
+            function openModal(modalId) {
+                document.getElementById(modalId).style.display = "block";
+            }
+
+            function closeModal(modalId) {
+                document.getElementById(modalId).style.display = "none";
+            }
+
+            // Close modals when clicking outside
+            window.onclick = function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            }
+
+            // Breadcrumbs
+            function updateBreadcrumb() {
+                const breadcrumb = document.getElementById('breadcrumbs');
+                breadcrumb.innerHTML = '';
+
+                const parts = currentDirectory.split('/').filter(part => part);
+                let path = '';
+
+                // Home
+                const homeBtn = document.createElement('button');
+                homeBtn.textContent = 'Home';
+                homeBtn.onclick = () => navigateTo('/home/nsatt-admin'); // Adjust based on BASE_DIR
+                breadcrumb.appendChild(homeBtn);
+                if (parts.length > 0) {
+                    const sep = document.createElement('span');
+                    sep.textContent = ' / ';
+                    breadcrumb.appendChild(sep);
+                }
+
+                // Other parts
+                parts.forEach((part, index) => {
+                    path += `/${part}`;
+                    const btn = document.createElement('button');
+                    btn.textContent = part;
+                    btn.onclick = () => navigateTo(path);
+                    breadcrumb.appendChild(btn);
+                    if (index < parts.length - 1) {
+                        const sep = document.createElement('span');
+                        sep.textContent = ' / ';
+                        breadcrumb.appendChild(sep);
+                    }
+                });
+            }
+
+            // Show Toast
+            function showToast(message, isSuccess=true) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.style.backgroundColor = isSuccess ? 'var(--toast-success-bg)' : 'var(--toast-error-bg)';
+                toast.className = 'toast show';
+                setTimeout(() => {
+                    toast.className = toast.className.replace('show', '');
+                }, 3000);
+            }
+
+            // Fetch Files with Filters and Search
+            async function fetchFiles() {
+                try {
+                    const filterName = document.getElementById('filterName').value.trim().toLowerCase();
+                    const filterType = document.getElementById('filterType').value.trim().toLowerCase();
+                    const filterDate = document.getElementById('filterDate').value;
+                    const searchQuery = document.getElementById('searchQuery').value.trim().toLowerCase();
+
+                    let url = `${serverUrl}/list?directory=${encodeURIComponent(currentDirectory)}&sort_by=${sortBy}&order=${sortOrder}`;
+
+                    if (filterName) {
+                        url += `&filter_name=${encodeURIComponent(filterName)}`;
+                    }
+                    if (filterType) {
+                        url += `&filter_type=${encodeURIComponent(filterType)}`;
+                    }
+                    if (filterDate) {
+                        url += `&filter_date=${encodeURIComponent(filterDate)}`;
+                    }
+                    if (searchQuery) {
+                        url += `&search_query=${encodeURIComponent(searchQuery)}`;
+                    }
+
+                    console.log(`Fetching files with URL: ${url}`);
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Failed to fetch files');
+                    const data = await response.json();
+                    console.log('Fetched data:', data);
+                    const fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+
+                    // Update Breadcrumb
+                    updateBreadcrumb();
+
+                    // Parent Directory
+                    if (currentDirectory !== '/home/nsatt-admin') { // Adjust based on initial directory
+                        const row = document.createElement('tr');
+
+                        // Checkbox Cell (disabled)
+                        const selectCell = document.createElement('td');
+                        selectCell.innerHTML = '<input type="checkbox" disabled>';
+                        row.appendChild(selectCell);
+
+                        // Name Cell
+                        const nameCell = document.createElement('td');
+                        nameCell.innerHTML = '⬆️ Parent Directory';
+                        nameCell.colSpan = getVisibleColumnCount() - 2;
+                        nameCell.style.cursor = 'pointer';
+                        nameCell.style.color = 'var(--action-color)';
+                        nameCell.onclick = navigateUp;
+                        row.appendChild(nameCell);
+
+                        // Actions Cell (empty)
+                        const actionCell = document.createElement('td');
+                        actionCell.innerHTML = '';
+                        row.appendChild(actionCell);
+
+                        fileList.appendChild(row);
+                    }
+
+                    data.files.forEach(file => {
+                        const row = document.createElement('tr');
+
+                        // Checkbox
+                        const checkboxCell = document.createElement('td');
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.onclick = (e) => {
+                            e.stopPropagation();
+                            if (checkbox.checked) {
+                                selectedFiles.add(file.path);
+                            } else {
+                                selectedFiles.delete(file.path);
+                            }
+                            updateSelectAllCheckbox();
+                        };
+                        checkboxCell.appendChild(checkbox);
+                        row.appendChild(checkboxCell);
+
+                        // Name
+                        const nameCell = document.createElement('td');
+                        if (file.type.toLowerCase() === 'directory') {
+                            nameCell.innerHTML = `📁 ${file.name}`;
+                            nameCell.title = 'Navigate into Folder';
+                            nameCell.style.cursor = 'pointer';
+                            nameCell.onclick = (e) => {
+                                e.stopPropagation();
+                                navigateTo(osPathJoin(currentDirectory, file.name));
+                            };
+                        } else {
+                            nameCell.innerHTML = `📄 ${file.name}`;
+                            nameCell.title = 'View Properties';
+                            nameCell.style.cursor = 'pointer';
+                            nameCell.onclick = (e) => {
+                                e.stopPropagation();
+                                openProperties(file.path);
+                            };
+                        }
+                        row.appendChild(nameCell);
+
+                        // Type
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = file.type;
+                        row.appendChild(typeCell);
+
+                        // Size
+                        const sizeCell = document.createElement('td');
+                        sizeCell.textContent = file.size ? formatSize(file.size) : '-';
+                        row.appendChild(sizeCell);
+
+                        // Created
+                        const createdCell = document.createElement('td');
+                        createdCell.textContent = file.created;
+                        row.appendChild(createdCell);
+
+                        // Modified
+                        const modifiedCell = document.createElement('td');
+                        modifiedCell.textContent = file.modified;
+                        row.appendChild(modifiedCell);
+
+                        // Permissions
+                        const permissionsCell = document.createElement('td');
+                        permissionsCell.textContent = file.permissions;
+                        row.appendChild(permissionsCell);
+
+                        // Actions
+                        const actionsCell = document.createElement('td');
+                        actionsCell.classList.add('action-buttons');
+
+                        // Download Button
+                        const downloadBtn = document.createElement('button');
+                        downloadBtn.innerHTML = '⬇️';
+                        downloadBtn.title = 'Download';
+                        downloadBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            downloadFile(file.name);
+                        };
+                        actionsCell.appendChild(downloadBtn);
+
+                        // Edit Button (for text files)
+                        if (file.type.toLowerCase() === 'file' && isTextFile(file.name)) {
+                            const editBtn = document.createElement('button');
+                            editBtn.innerHTML = '✏️';
+                            editBtn.title = 'Edit';
+                            editBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                editFile(file.name);
+                            };
+                            actionsCell.appendChild(editBtn);
+                        }
+
+                        // View Image Button
+                        if (file.type.toLowerCase() === 'file' && isImageFile(file.name)) {
+                            const viewImgBtn = document.createElement('button');
+                            viewImgBtn.innerHTML = '🖼️';
+                            viewImgBtn.title = 'View Image';
+                            viewImgBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                viewImage(file.name);
+                            };
+                            actionsCell.appendChild(viewImgBtn);
+                        }
+
+                        // View Video Button
+                        if (file.type.toLowerCase() === 'file' && isVideoFile(file.name)) {
+                            const viewVidBtn = document.createElement('button');
+                            viewVidBtn.innerHTML = '🎥';
+                            viewVidBtn.title = 'View Video';
+                            viewVidBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                viewVideo(file.name);
+                            };
+                            actionsCell.appendChild(viewVidBtn);
+                        }
+
+                        // View Audio Button
+                        if (file.type.toLowerCase() === 'file' && isAudioFile(file.name)) {
+                            const viewAudBtn = document.createElement('button');
+                            viewAudBtn.innerHTML = '🎵';
+                            viewAudBtn.title = 'View Audio';
+                            viewAudBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                viewAudio(file.name);
+                            };
+                            actionsCell.appendChild(viewAudBtn);
+                        }
+
+                        // Rename Button
+                        const renameBtn = document.createElement('button');
+                        renameBtn.innerHTML = '🔄';
+                        renameBtn.title = 'Rename';
+                        renameBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openRenameModal(file.name);
+                        };
+                        actionsCell.appendChild(renameBtn);
+
+                        // Delete Button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = '🗑️';
+                        deleteBtn.title = 'Delete';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openDeleteModal(file.name);
+                        };
+                        actionsCell.appendChild(deleteBtn);
+
+                        // Copy Button
+                        const copyBtn = document.createElement('button');
+                        copyBtn.innerHTML = '📋';
+                        copyBtn.title = 'Copy';
+                        copyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            copyFile(file.name);
+                        };
+                        actionsCell.appendChild(copyBtn);
+
+                        // Move Button
+                        const moveBtn = document.createElement('button');
+                        moveBtn.innerHTML = '📂';
+                        moveBtn.title = 'Move';
+                        moveBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            moveFile(file.name);
+                        };
+                        actionsCell.appendChild(moveBtn);
+
+                        // Change Permissions Button
+                        const permBtn = document.createElement('button');
+                        permBtn.innerHTML = '🔒';
+                        permBtn.title = 'Change Permissions';
+                        permBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            changePermissions(file.name);
+                        };
+                        actionsCell.appendChild(permBtn);
+
+                        // Properties Button
+                        const propsBtn = document.createElement('button');
+                        propsBtn.innerHTML = 'ℹ️';
+                        propsBtn.title = 'Properties';
+                        propsBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openProperties(file.path);
+                        };
+                        actionsCell.appendChild(propsBtn);
+
+                        row.appendChild(actionsCell);
+                        fileList.appendChild(row);
+                    });
+
+                    // Reset selected files
+                    selectedFiles.clear();
+                    updateSelectAllCheckbox();
+                    saveColumnPreferences();
+                } catch (error) {
+                    console.error('Error fetching files:', error);
+                    showToast(`Error fetching files: ${error.message}`, false);
+                }
+            }
+
+            // Fetch Folder Tree
+            async function fetchFolderTree() {
+                try {
+                    const response = await fetch(`${serverUrl}/list?directory=${encodeURIComponent('/home/nsatt-admin')}`);
+                    if (!response.ok) throw new Error('Failed to fetch folder tree');
+                    const data = await response.json();
+                    populateFolderTree(data.directory, data.files);
+                } catch (error) {
+                    console.error('Error fetching folder tree:', error);
+                    showToast(`Error fetching folder tree: ${error.message}`, false);
+                }
+            }
+
+            // Populate Folder Tree
+            function populateFolderTree(currentPath, files, parentElement = null) {
+                const tree = parentElement || document.getElementById('folderTree');
+                tree.innerHTML = ''; // Clear existing tree
+
+                files.forEach(file => {
+                    if (file.type.toLowerCase() === 'directory') {
+                        const li = document.createElement('li');
+
+                        // Toggle Icon
+                        const toggleIcon = document.createElement('span');
+                        toggleIcon.classList.add('toggle-icon');
+                        toggleIcon.innerHTML = '▶️';
+                        toggleIcon.onclick = (e) => {
+                            e.stopPropagation();
+                            li.classList.toggle('active');
+                            toggleIcon.innerHTML = li.classList.contains('active') ? '▼' : '▶️';
+                        };
+                        li.appendChild(toggleIcon);
+
+                        // Folder Name
+                        const folderName = document.createElement('span');
+                        folderName.innerHTML = `📁 ${file.name}`;
+                        folderName.title = 'Navigate into Folder';
+                        folderName.style.cursor = 'pointer';
+                        folderName.onclick = (e) => {
+                            e.stopPropagation();
+                            navigateTo(osPathJoin(currentPath, file.name));
+                        };
+                        li.appendChild(folderName);
+
+                        // Nested Folder Tree
+                        const subUl = document.createElement('ul');
+                        subUl.classList.add('nested');
+                        li.appendChild(subUl);
+
+                        // Fetch subdirectories on expand
+                        li.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            this.classList.toggle('active');
+                            toggleIcon.innerHTML = this.classList.contains('active') ? '▼' : '▶️';
+                            if (subUl.children.length === 0) {
+                                // Fetch subdirectories
+                                fetch(`${serverUrl}/list?directory=${encodeURIComponent(osPathJoin(currentPath, file.name))}`)
+                                    .then(resp => resp.json())
+                                    .then(subData => {
+                                        populateFolderTree(subData.directory, subData.files, subUl);
+                                    })
+                                    .catch(err => {
+                                        console.error('Error fetching subdirectories:', err);
+                                        showToast(`Error fetching subdirectories: ${err.message}`, false);
+                                    });
+                            }
+                        });
+
+                        tree.appendChild(li);
+                    }
+                });
+            }
+
+            // Sort Table
+            function sortTable(column) {
+                if (sortBy === column) {
+                    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortBy = column;
+                    sortOrder = 'asc';
+                }
+                updateSortArrows();
+                fetchFiles();
+            }
+
+            // Update Sort Arrows
+            function updateSortArrows() {
+                const columns = ['name', 'type', 'size', 'created', 'modified', 'permissions'];
+                columns.forEach(col => {
+                    const arrow = document.getElementById(`sort-${col}`);
+                    if (col === sortBy) {
+                        arrow.textContent = sortOrder === 'asc' ? '▲' : '▼';
+                    } else {
+                        arrow.textContent = '';
+                    }
+                });
+            }
+
+            // Toggle Select All
+            function toggleSelectAll(source) {
+                const checkboxes = document.querySelectorAll('#fileList input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = source.checked;
+                    const row = checkbox.closest('tr');
+                    const filePath = row.querySelector('td:nth-child(2)').textContent.replace(/^📄 |^📁 |⬆️ /, '');
+                    const fullPath = osPathJoin(currentDirectory, filePath);
+                    if (checkbox.checked) {
+                        selectedFiles.add(fullPath);
+                    } else {
+                        selectedFiles.delete(fullPath);
+                    }
+                });
+            }
+
+            // Update Select All Checkbox
+            function updateSelectAllCheckbox() {
+                const selectAll = document.getElementById('selectAll');
+                const checkboxes = document.querySelectorAll('#fileList input[type="checkbox"]');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                selectAll.checked = allChecked;
+            }
+
+            // Bulk Delete
+            async function bulkDelete() {
+                if (selectedFiles.size === 0) {
+                    showToast('No files selected for deletion.', false);
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to delete the selected files/folders?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${serverUrl}/bulk_delete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filepaths: Array.from(selectedFiles) })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                    } else {
+                        showToast(`Failed to delete: ${data.error}`, false);
+                    }
+                } catch (error) {
+                    console.error('Error in bulk delete:', error);
+                    showToast('Failed to delete selected files.', false);
+                }
+            }
+
+            // Open Bulk Move Modal
+            function openBulkMoveModal() {
+                if (selectedFiles.size === 0) {
+                    showToast('No files selected for moving.', false);
+                    return;
+                }
+                openModal('bulkMoveModal');
+            }
+
+            // Submit Bulk Move
+            async function submitBulkMove() {
+                const destinationDir = document.getElementById('bulkMoveDestination').value.trim();
+                if (!destinationDir) {
+                    showToast('Destination directory cannot be empty.', false);
+                    return;
+                }
+
+                if (!destinationDir.startsWith('/')) {
+                    showToast('Please provide an absolute path for the destination.', false);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${serverUrl}/bulk_move`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filepaths: Array.from(selectedFiles), destination_dir: destinationDir })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        closeModal('bulkMoveModal');
+                    } else {
+                        showToast(`Failed to move: ${data.error}`, false);
+                    }
+                } catch (error) {
+                    console.error('Error in bulk move:', error);
+                    showToast('Failed to move selected files.', false);
+                }
+            }
+
+            // Create Folder
+            async function submitCreateFolder() {
+                const folderName = document.getElementById('newFolderName').value.trim();
+                if (!folderName) {
+                    showToast('Folder name cannot be empty.', false);
+                    return;
+                }
+
+                const folderPath = osPathJoin(currentDirectory, folderName);
+
+                try {
+                    const response = await fetch(`${serverUrl}/create_folder`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ folder_path: folderPath })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        closeModal('createFolderModal');
+                        document.getElementById('newFolderName').value = '';
+                    } else {
+                        showToast(data.error || 'Failed to create folder.', false);
+                    }
+                } catch (error) {
+                    console.error('Error creating folder:', error);
+                    showToast('Failed to create folder.', false);
+                }
+            }
+
+            // Open Rename Modal
+            let selectedFile = null; // To keep track of the file being renamed
+            function openRenameModal(filename) {
+                selectedFile = filename;
+                document.getElementById('renameNewName').value = filename;
+                openModal('renameModal');
+            }
+
+            // Submit Rename
+            async function submitRename() {
+                const newName = document.getElementById('renameNewName').value.trim();
+                if (!newName) {
+                    showToast('New name cannot be empty.', false);
+                    return;
+                }
+
+                const oldPath = osPathJoin(currentDirectory, selectedFile);
+                const newPath = osPathJoin(currentDirectory, newName);
+
+                try {
+                    const response = await fetch(`${serverUrl}/rename`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ old_path: oldPath, new_path: newPath })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        closeModal('renameModal');
+                    } else {
+                        showToast(data.error || 'Failed to rename file.', false);
+                    }
+                } catch (error) {
+                    console.error('Error renaming file:', error);
+                    showToast('Failed to rename file.', false);
+                }
+            }
+
+            // Open Delete Modal
+            function openDeleteModal(filename) {
+                selectedFile = filename;
+                document.getElementById('deleteFileName').textContent = filename;
+                openModal('confirmDeleteModal');
+            }
+
+            // Confirm Delete
+            async function confirmDelete() {
+                const filePath = osPathJoin(currentDirectory, selectedFile);
+
+                try {
+                    const response = await fetch(`${serverUrl}/delete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filepath: filePath })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        closeModal('confirmDeleteModal');
+                    } else {
+                        showToast(data.error || 'Failed to delete file.', false);
+                    }
+                } catch (error) {
+                    console.error('Error deleting file:', error);
+                    showToast('Failed to delete file.', false);
+                }
+            }
+
+            // Copy File
+            function copyFile(filename) {
+                copiedFile = osPathJoin(currentDirectory, filename);
+                pasteAction = 'copy';
+                showToast(`Copied ${filename} to clipboard.`, true);
+            }
+
+            // Move File
+            function moveFile(filename) {
+                copiedFile = osPathJoin(currentDirectory, filename);
+                pasteAction = 'move';
+                showToast(`Cut ${filename} to clipboard.`, true);
+            }
+
+            // Paste Copy/Move
+            async function pasteFile() {
+                if (!copiedFile || !pasteAction) {
+                    showToast('No file to paste.', false);
+                    return;
+                }
+
+                const destinationDir = currentDirectory;
+
+                try {
+                    let endpoint = '';
+                    if (pasteAction === 'copy') {
+                        endpoint = '/copy';
+                    } else if (pasteAction === 'move') {
+                        endpoint = '/move';
+                    }
+
+                    const response = await fetch(`${serverUrl}${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ source_path: copiedFile, destination_dir: destinationDir })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        copiedFile = null;
+                        pasteAction = null;
+                    } else {
+                        showToast(data.error || `Failed to ${pasteAction} file.`, false);
+                    }
+                } catch (error) {
+                    console.error(`Error during paste operation:`, error);
+                    showToast(`Failed to ${pasteAction} file.`, false);
+                }
+            }
+
+            // Change Permissions
+            async function changePermissions(filename) {
+                selectedFile = filename;
+                document.getElementById('permissionsInput').value = '';
+                openModal('permissionsModal');
+            }
+
+            async function submitChangePermissions() {
+                const newPermissions = document.getElementById('permissionsInput').value.trim();
+                if (!/^[0-7]{3}$/.test(newPermissions)) {
+                    showToast('Invalid permissions format. Use three octal digits (e.g., 755).', false);
+                    return;
+                }
+
+                const filePath = osPathJoin(currentDirectory, selectedFile);
+
+                try {
+                    const response = await fetch(`${serverUrl}/change_permissions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filepath: filePath, permissions: newPermissions })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        closeModal('permissionsModal');
+                    } else {
+                        showToast(data.error || 'Failed to change permissions.', false);
+                    }
+                } catch (error) {
+                    console.error('Error changing permissions:', error);
+                    showToast('Failed to change permissions.', false);
+                }
+            }
+
+            // Edit File
+            async function editFile(filename) {
+                selectedFile = filename;
+                const filePath = osPathJoin(currentDirectory, filename);
+
+                try {
+                    const response = await fetch(`${serverUrl}/read_file?filepath=${encodeURIComponent(filePath)}`);
+                    const data = await response.json();
+                    if (response.ok && data.content !== undefined) {
+                        document.getElementById('editFileName').textContent = filename;
+                        document.getElementById('editFileContent').value = data.content;
+                        openModal('editFileModal');
+                    } else {
+                        showToast(data.error || 'Failed to read file.', false);
+                    }
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                    showToast('Failed to read file.', false);
+                }
+            }
+
+            async function saveFileEdit() {
+                const newContent = document.getElementById('editFileContent').value;
+                const filePath = osPathJoin(currentDirectory, selectedFile);
+
+                try {
+                    const response = await fetch(`${serverUrl}/edit_file`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filepath: filePath, content: newContent })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        closeModal('editFileModal');
+                    } else {
+                        showToast(data.error || 'Failed to save file.', false);
+                    }
+                } catch (error) {
+                    console.error('Error saving file:', error);
+                    showToast('Failed to save file.', false);
+                }
+            }
+
+            // View Image
+            function viewImage(filename) {
+                const filePath = osPathJoin(currentDirectory, filename);
+                const fileUrl = `${serverUrl}/download?directory=${encodeURIComponent(currentDirectory)}&filename=${encodeURIComponent(filename)}`;
+                document.getElementById('imageViewerName').textContent = filename;
+                document.getElementById('imageViewerContent').src = fileUrl;
+                openModal('imageViewerModal');
+            }
+
+            // View Video
+            function viewVideo(filename) {
+                const filePath = osPathJoin(currentDirectory, filename);
+                const fileUrl = `${serverUrl}/download?directory=${encodeURIComponent(currentDirectory)}&filename=${encodeURIComponent(filename)}`;
+                document.getElementById('videoPlayerName').textContent = filename;
+                document.getElementById('videoPlayerContent').src = fileUrl;
+                openModal('videoPlayerModal');
+            }
+
+            // View Audio
+            function viewAudio(filename) {
+                const filePath = osPathJoin(currentDirectory, filename);
+                const fileUrl = `${serverUrl}/download?directory=${encodeURIComponent(currentDirectory)}&filename=${encodeURIComponent(filename)}`;
+                document.getElementById('audioPlayerName').textContent = filename;
+                document.getElementById('audioPlayerContent').src = fileUrl;
+                openModal('audioPlayerModal');
+            }
+
+            // Download File
+            function downloadFile(filename) {
+                const downloadUrl = `${serverUrl}/download?directory=${encodeURIComponent(currentDirectory)}&filename=${encodeURIComponent(filename)}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast(`Downloading ${filename}`, true);
+            }
+
+            // Open Properties Modal
+            async function openProperties(filePath) {
+                try {
+                    // Fetch file details
+                    const parentDir = getParentDir(filePath);
+                    const fileName = getFileName(filePath);
+                    const response = await fetch(`${serverUrl}/list?directory=${encodeURIComponent(parentDir)}&search_query=${encodeURIComponent(fileName)}`);
+                    if (!response.ok) throw new Error('Failed to fetch properties');
+                    const data = await response.json();
+                    const file = data.files.find(f => f.path === filePath);
+                    if (!file) throw new Error('File not found');
+
+                    document.getElementById('propertiesFileName').textContent = file.name;
+                    document.getElementById('propertiesFilePath').textContent = file.path;
+                    document.getElementById('propertiesFileType').textContent = file.type;
+                    document.getElementById('propertiesFileSize').textContent = file.size ? formatSize(file.size) : '-';
+                    document.getElementById('propertiesFileCreated').textContent = file.created;
+                    document.getElementById('propertiesFileModified').textContent = file.modified;
+                    document.getElementById('propertiesFilePermissions').textContent = file.permissions;
+
+                    openModal('propertiesModal');
+                } catch (error) {
+                    console.error('Error opening properties:', error);
+                    showToast('Failed to open properties.', false);
+                }
+            }
+
+            // Utility Functions
+            function osPathJoin(dir, name) {
+                if (dir === '/') {
+                    return `/${name}`;
+                }
+                return `${dir}/${name}`;
+            }
+
+            function isImageFile(filename) {
+                return /\.(jpg|jpeg|png|gif|bmp|svg)$/.test(filename.toLowerCase());
+            }
+
+            function isVideoFile(filename) {
+                return /\.(mp4|avi|mkv|mov|wmv|flv)$/.test(filename.toLowerCase());
+            }
+
+            function isAudioFile(filename) {
+                return /\.(mp3|wav|ogg|flac)$/.test(filename.toLowerCase());
+            }
+
+            function isTextFile(filename) {
+                return /\.(txt|md|py|js|html|css|json|xml)$/.test(filename.toLowerCase());
+            }
+
+            function formatSize(bytes) {
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                if (bytes === 0) return '0 Byte';
+                const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+                return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+            }
+
+            function navigateTo(path) {
+                currentDirectory = path;
+                fetchFiles();
+                fetchFolderTree();
+            }
+
+            function navigateUp() {
+                const parts = currentDirectory.split('/').filter(part => part);
+                parts.pop();
+                const newPath = parts.length > 0 ? `/${parts.join('/')}` : '/home/nsatt-admin';
+                navigateTo(newPath);
+            }
+
+            // Column Toggling
+            function initializeColumns() {
+                loadColumnPreferences();
+                adjustTableLayout();
+            }
+
+            function loadColumnPreferences() {
+                const savedPrefs = localStorage.getItem('columnPreferences');
+                if (savedPrefs) {
+                    columnPreferences = JSON.parse(savedPrefs);
+                    document.querySelectorAll('.column-checkbox').forEach(checkbox => {
+                        const column = checkbox.getAttribute('data-column');
+                        if (columnPreferences.hasOwnProperty(column)) {
+                            checkbox.checked = columnPreferences[column];
+                            toggleColumnVisibility(column, columnPreferences[column]);
+                        }
+                    });
+                } else {
+                    // Default all columns visible except actions
+                    document.querySelectorAll('.column-checkbox').forEach(checkbox => {
+                        const column = checkbox.getAttribute('data-column');
+                        columnPreferences[column] = true;
+                    });
+                    saveColumnPreferences();
+                }
+            }
+
+            function saveColumnPreferences() {
+                localStorage.setItem('columnPreferences', JSON.stringify(columnPreferences));
+            }
+
+            function toggleColumnVisibility(column, isVisible) {
+                const th = document.querySelector(`th[data-column="${column}"]`);
+                const tdList = document.querySelectorAll(`td[data-column="${column}"]`);
+                if (isVisible) {
+                    th.style.display = '';
+                    tdList.forEach(td => td.style.display = '');
+                } else {
+                    th.style.display = 'none';
+                    tdList.forEach(td => td.style.display = 'none');
+                }
+            }
+
+            document.querySelectorAll('.column-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const column = e.target.getAttribute('data-column');
+                    const isChecked = e.target.checked;
+                    columnPreferences[column] = isChecked;
+                    toggleColumnVisibility(column, isChecked);
+                    saveColumnPreferences();
+                    adjustTableLayout();
+                });
+            });
+
+            // Adjust Table Layout Based on Visible Columns
+            function adjustTableLayout() {
+                const thSelect = document.querySelector('th[data-column="select"]');
+                const thActions = document.querySelector('th[data-column="actions"]');
+                thSelect.style.width = '40px';
+                thActions.style.width = '120px';
+
+                document.querySelectorAll('td[data-column="select"]').forEach(td => td.style.width = '40px');
+                document.querySelectorAll('td[data-column="actions"]').forEach(td => td.style.width = '120px');
+            }
+
+            function getColumnIndex(column) {
+                const columns = ['select', 'name', 'type', 'size', 'created', 'modified', 'permissions', 'actions'];
+                return columns.indexOf(column) + 1;
+            }
+
+            // Filters and Search
+            function applyFilters() {
+                fetchFiles();
+            }
+
+            // Upload Files
+            async function uploadFiles() {
+                const files = document.getElementById('fileInput').files;
+                if (files.length === 0) {
+                    showToast('No files selected for upload.', false);
+                    return;
+                }
+
+                const formData = new FormData();
+                for (let file of files) {
+                    formData.append('file', file);
+                }
+                formData.append('directory', currentDirectory);
+
+                try {
+                    const response = await fetch(`${serverUrl}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast(data.message, true);
+                        fetchFiles();
+                        document.getElementById('fileInput').value = '';
+                    } else {
+                        showToast(data.error || 'Failed to upload files.', false);
+                    }
+                } catch (error) {
+                    console.error('Error uploading files:', error);
+                    showToast('Failed to upload files.', false);
+                }
+            }
+
+            // Bulk Move Modal
+            async function openBulkMoveModal() {
+                if (selectedFiles.size === 0) {
+                    showToast('No files selected for moving.', false);
+                    return;
+                }
+                openModal('bulkMoveModal');
+            }
+
+            // Notepad Modal Functions (If needed)
+            // You can implement similar to Edit File if desired
+
+            // Drag to Resize Sidebar
+            const dragDivider = document.getElementById('dragDivider');
+            const sidebarContainer = document.getElementById('sidebarContainer');
+
+            dragDivider.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                document.addEventListener('mousemove', resizeSidebar);
+                document.addEventListener('mouseup', stopResize);
+            });
+
+            function resizeSidebar(e) {
+                const newWidth = e.clientX;
+                if (newWidth >= 150 && newWidth <= 400) { // Set min and max width
+                    sidebarContainer.style.width = `${newWidth}px`;
+                }
+            }
+
+            function stopResize() {
+                document.removeEventListener('mousemove', resizeSidebar);
+                document.removeEventListener('mouseup', stopResize);
+            }
+
+        </script>
+    </div>
+</body>
+</html>
+{% endblock %}
